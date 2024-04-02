@@ -38,20 +38,57 @@ class HabitCLI:
 
     def add_habit(self):
         """Add a new habit."""
-        # For later: Implementation details
+        habit_name = prompt({
+            "type": "input",
+            "name": "habit_name",
+            "message": "Enter the name of the habit:"
+        })["habit_name"]
+        
+        habit_description = prompt({
+            "type": "input",
+            "name": "habit_description",
+            "message": "Enter a description for the habit:"
+        })["habit_description"]
+        
+        self.habit_tracker.add_habit(habit_name, habit_description)
+        print(f"Habit '{habit_name}' successfully added!\n")
 
     def remove_habit(self):
         """Remove an existing habit."""
-        # For later: Implementation details
+        habit_name = prompt({
+            "type": "select",
+            "name": "habit_name",
+            "message": "Select the habit you want to remove:",
+            "choices": [habit.name for habit in self.habit_tracker.get_habits()]
+        })["habit_name"]
+        
+        self.habit_tracker.remove_habit(habit_name)
+        print(f"Habit '{habit_name}' successfully removed!\n")
 
     def view_habit_list(self):
         """View the list of habits."""
-        # For later: Implementation details
+        habits = self.habit_tracker.get_habits()
+        print("Habit List:")
+        for habit in habits:
+            print(f"- {habit.name}: {habit.description}")
+        print()
 
     def check_habit_state(self):
         """Check the state of a habit."""
-        # For later: Implementation details
+        habit_name = prompt({
+            "type": "select",
+            "name": "habit_name",
+            "message": "Select the habit to check its state:",
+            "choices": [habit.name for habit in self.habit_tracker.get_habits()]
+        })["habit_name"]
+        
+        state = self.habit_tracker.check_habit_state(habit_name)
+        print(f"The state of habit '{habit_name}' is: {state}\n")
 
     def view_streaks(self):
         """View streaks for habits."""
-        # For later: Implementation details
+        streaks = self.habit_tracker.view_streaks()
+        print("Habit Streaks:")
+        for habit, streak in streaks.items():
+            print(f"- {habit}: {streak} days")
+        print()
