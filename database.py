@@ -2,7 +2,6 @@ import sqlite3
 from datetime import date
 from habit import Habit
 
-
 class HabitDatabase:
     """Handles interactions with the SQLite database for habit tracking."""
 
@@ -57,6 +56,33 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         cursor.execute("SELECT name FROM counter")
         return [row[0] for row in cursor.fetchall()]
+
+    def get_habit_data(self, name: str) -> list:
+        """Get habit data from the database."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM counter WHERE name=?", (name,))
+        return cursor.fetchall()
+
+    def get_streaks(self):
+        """Get streaks data from the database."""
+        streaks = {}
+        for habit_name in self.get_habits():
+            habit_data = self.get_counter_data(habit_name)
+            completed_dates = [row[0] for row in habit_data]
+            streaks[habit_name] = self.calculate_streak(completed_dates)
+        return streaks
+
+    def calculate_streak(self, completed_dates: list) -> int:
+        """Calculate streak based on completed dates."""
+        streak = 0
+        current_date = date.today()
+        for date in reversed(completed_dates):
+            if (current_date - date).days <= 1:
+                streak += 1
+                current_date = date
+            else:
+                break
+        return streak
 
     def update_database(self):
         """Update the database with current habit data."""
