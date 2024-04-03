@@ -1,5 +1,7 @@
 import sqlite3
 from datetime import date
+from habit import Habit
+
 
 class HabitDatabase:
     """Handles interactions with the SQLite database for habit tracking."""
@@ -58,7 +60,11 @@ class HabitDatabase:
 
     def update_database(self):
         """Update the database with current habit data."""
-        # For later: Logic to update database with current habit data goes here
+        for habit_name in self.get_habits():
+            habit = Habit(habit_name, "") 
+            habit_data = self.get_counter_data(habit_name)
+            habit.completed_tasks = [row[0] for row in habit_data] 
+        
 
     def close(self):
         """Close the database connection."""
