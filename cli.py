@@ -1,5 +1,6 @@
+from habit import Habit
 from habit_tracker import HabitTracker
-from questionary import prompt
+import questionary
 
 class HabitCLI:
     """Command Line Interface for Habit Tracker."""
@@ -10,11 +11,9 @@ class HabitCLI:
     def main_menu(self):
         """Main menu for Habit Tracker."""
         while True:
-            choice = prompt({
-                "type": "list",
-                "name": "action",
-                "message": "What would you like to do?",
-                "choices": [
+            choice = questionary.select(
+                "What would you like to do?",
+                choices=[
                     "Add Habit",
                     "Remove Habit",
                     "View Habit List",
@@ -22,7 +21,8 @@ class HabitCLI:
                     "View Streaks",
                     "Quit"
                 ]
-            })["action"]
+            ).ask()
+            
             if choice == "Add Habit":
                 self.add_habit()
             elif choice == "Remove Habit":
@@ -38,29 +38,27 @@ class HabitCLI:
 
     def add_habit(self):
         """Add a new habit."""
-        habit_name = prompt({
-            "type": "input",
-            "name": "habit_name",
-            "message": "Enter the name of the habit:"
-        })["habit_name"]
+        habit_name = questionary.text("Enter the name of the habit:").ask()
+        habit_description = questionary.text("Enter a description for the habit:").ask()
         
-        habit_description = prompt({
-            "type": "input",
-            "name": "habit_description",
-            "message": "Enter a description for the habit:"
-        })["habit_description"]
+        # Create a Habit object with the provided name and description
+        habit = Habit(habit_name, habit_description)
         
-        self.habit_tracker.add_habit(habit_name, habit_description)
+        # Add the habit to the habit tracker
+        self.habit_tracker.add_habit(habit)
         print(f"Habit '{habit_name}' successfully added!\n")
 
     def remove_habit(self):
         """Remove an existing habit."""
-        habit_name = prompt({
-            "type": "select",
-            "name": "habit_name",
-            "message": "Select the habit you want to remove:",
-            "choices": [habit.name for habit in self.habit_tracker.get_habits()]
-        })["habit_name"]
+        habit_names = [habit.name for habit in self.habit_tracker.get_habits()]
+        if not habit_names:
+            print("No habits to remove.")
+            return
+        
+        habit_name = questionary.select(
+            "Select the habit you want to remove:",
+            choices=habit_names
+        ).ask()
         
         self.habit_tracker.remove_habit(habit_name)
         print(f"Habit '{habit_name}' successfully removed!\n")
@@ -75,12 +73,15 @@ class HabitCLI:
 
     def check_habit_state(self):
         """Check the state of a habit."""
-        habit_name = prompt({
-            "type": "select",
-            "name": "habit_name",
-            "message": "Select the habit to check its state:",
-            "choices": [habit.name for habit in self.habit_tracker.get_habits()]
-        })["habit_name"]
+        habit_names = [habit.name for habit in self.habit_tracker.get_habits()]
+        if not habit_names:
+            print("No habits to check state.")
+            return
+        
+        habit_name = questionary.select(
+            "Select the habit to check its state:",
+            choices=habit_names
+        ).ask()
         
         state = self.habit_tracker.check_habit_state(habit_name)
         print(f"The state of habit '{habit_name}' is: {state}\n")
