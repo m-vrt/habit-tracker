@@ -43,11 +43,16 @@ class HabitTracker:
         :return: State of the habit
         """
         habit_data = self.habit_database.get_habit_data(habit_name)
-     
+        if habit_data:
+            return "Habit exists"
+        else:
+            return "No habits tracked"
+
     def view_streaks(self):
         """View streaks for habits."""
         streaks = self.habit_database.get_streaks()
-     
+        return streaks
+
     def update_database(self):
         """Update the database with current habit data."""
         self.habit_database.update_data()

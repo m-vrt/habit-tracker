@@ -54,7 +54,19 @@ class Habit:
         if len(self.completed_tasks) > 0:
             last_completed_date = self.completed_tasks[-1]
             current_date = datetime.now().date()
-            period_start_date = current_date - timedelta(days=self.periodicity)
+            
+            # Handle periodicity string ('daily' or 'weekly')
+            if isinstance(self.periodicity, str):
+                if self.periodicity == 'daily':
+                    periodicity_days = 1
+                elif self.periodicity == 'weekly':
+                    periodicity_days = 7
+                else:
+                    raise ValueError("Invalid value for periodicity")
+            else:
+                periodicity_days = int(self.periodicity)
+                
+            period_start_date = current_date - timedelta(days=periodicity_days)
             return period_start_date <= last_completed_date < current_date
         return False
 
