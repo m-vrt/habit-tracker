@@ -16,26 +16,31 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         cursor.execute("""CREATE TABLE IF NOT EXISTS counter (
             name TEXT PRIMARY KEY,
-            description TEXT)""")
-
+            description TEXT UNIQUE)""")
         cursor.execute("""CREATE TABLE IF NOT EXISTS tracker (
             date TEXT,
             counterName TEXT,
             FOREIGN KEY(counterName) REFERENCES counter(name))""")
-
         self.connection.commit()
 
     def add_habit(self, name: str, description: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO counter VALUES (?, ?)", (name, description))
+        try:
+            cursor.execute("INSERT INTO counter VALUES (?, ?)", (name, description))
+        except sqlite3.IntegrityError:
+            raise ValueError(f"Habit with name '{name}' already exists.")
         self.connection.commit()
 
     def remove_habit(self, name: str) -> None:
         """Remove a habit from the database."""
+        print(f"Removing habit from database: {name}")
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM counter WHERE name=?", (name,))
         self.connection.commit()
+        print("Database state after deletion:")
+        cursor.execute("SELECT * FROM counter")
+        print(cursor.fetchall())  
 
     def increment_counter(self, name: str, event_date: str = None) -> None:
         """Increment the counter in the database."""
@@ -61,7 +66,7 @@ class HabitDatabase:
         """Get habit data from the database."""
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM counter WHERE name=?", (name,))
-        return cursor.fetchall()
+        return cursor.fetchone()
 
     def get_streaks(self):
         """Get streaks data from the database."""
@@ -76,10 +81,10 @@ class HabitDatabase:
         """Calculate streak based on completed dates."""
         streak = 0
         current_date = date.today()
-        for date in reversed(completed_dates):
-            if (current_date - date).days <= 1:
+        for completed_date in reversed(completed_dates):  
+            if (current_date - completed_date).days <= 1:
                 streak += 1
-                current_date = date
+                current_date = completed_date
             else:
                 break
         return streak
@@ -87,10 +92,10 @@ class HabitDatabase:
     def update_database(self):
         """Update the database with current habit data."""
         for habit_name in self.get_habits():
-            habit = Habit(habit_name, "") 
+            habit = Habit(habit_name, "")
             habit_data = self.get_counter_data(habit_name)
-            habit.completed_tasks = [row[0] for row in habit_data] 
-        
+            habit.completed_tasks = [row[0] for row in habit_data]
+            self.increment_counter(habit_name, habit.completed_tasks[-1])  
 
     def close(self):
         """Close the database connection."""

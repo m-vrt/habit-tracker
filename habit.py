@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from collections import Counter
 
-
 class Habit:
     """Represents a habit."""
 
@@ -21,7 +20,7 @@ class Habit:
         self.completed_tasks = []
         self.streak_counter = Counter()
         self.streak = 0
-        self.last_completed_date = None  # Track the last completed date
+        self.last_completed_date = None  
 
     def complete_task(self):
         """
@@ -31,6 +30,7 @@ class Habit:
         """
         self.completed_tasks.append(datetime.now().date())
         self.update_streak()
+        self.last_completed_date = datetime.now().date()  
 
     def update_streak(self):
         """
@@ -54,8 +54,7 @@ class Habit:
         if len(self.completed_tasks) > 0:
             last_completed_date = self.completed_tasks[-1]
             current_date = datetime.now().date()
-            
-            # Handle periodicity string ('daily' or 'weekly')
+                       
             if isinstance(self.periodicity, str):
                 if self.periodicity == 'daily':
                     periodicity_days = 1
@@ -92,4 +91,4 @@ class Habit:
         and resets the streak if the period has elapsed.
         """
         if not self.is_task_completed_within_period(period):
-            self.streak = 0  # Reset streak if the task is not completed within the period
+            self.streak = 0  
