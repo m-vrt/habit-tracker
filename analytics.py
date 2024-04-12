@@ -1,4 +1,5 @@
 from database import HabitDatabase
+from habit import Habit
 
 def get_tracked_habits(habit_database):
     """
@@ -27,7 +28,7 @@ def get_longest_streak(habit_database):
     :param habit_database: Instance of HabitDatabase
     :return: Longest run streak
     """
-    streaks = habit_database.get_streaks()
+    streaks = habit_database.view_streaks()
     return max(streaks.values())
 
 def get_longest_streak_for_habit(habit_database, habit_name):
@@ -38,5 +39,5 @@ def get_longest_streak_for_habit(habit_database, habit_name):
     :param habit_name: Name of the habit to retrieve streak for
     :return: Longest run streak for the specified habit
     """
-    streaks = habit_database.get_streaks()
+    streaks = habit_database.view_streaks()
     return streaks.get(habit_name, 0)

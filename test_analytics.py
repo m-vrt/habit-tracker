@@ -56,7 +56,7 @@ class MockHabitDatabase:
             Habit("Learn Language", "Learn Language description", "daily", datetime.now())
         ]
 
-    def get_streaks(self):
+    def view_streaks(self):
         return {"Exercise": 28, "Read": 28, "Meditate": 28, "Weekly Review": 28, "Learn Language": 28}
 
 
@@ -64,7 +64,7 @@ class MockEmptyHabitDatabase:
     def get_habits(self):
         return []
 
-    def get_streaks(self):
+    def view_streaks(self):
         return {"Exercise": 0}
 
 
