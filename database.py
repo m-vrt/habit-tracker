@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date
+from datetime import datetime, timedelta
 from habit import Habit
 
 class HabitDatabase:
@@ -28,27 +28,36 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         try:
             cursor.execute("INSERT INTO counter VALUES (?, ?)", (name, description))
+            self.connection.commit()
         except sqlite3.IntegrityError:
             raise ValueError(f"Habit with name '{name}' already exists.")
-        self.connection.commit()
 
     def remove_habit(self, name: str) -> None:
         """Remove a habit from the database."""
-        print(f"Removing habit from database: {name}")
         cursor = self.connection.cursor()
-        cursor.execute("DELETE FROM counter WHERE name=?", (name,))
-        self.connection.commit()
-        print("Database state after deletion:")
-        cursor.execute("SELECT * FROM counter")
-        print(cursor.fetchall())  
+        try:
+            cursor.execute("DELETE FROM counter WHERE name=?", (name,))
+            if cursor.rowcount == 0:
+                raise sqlite3.IntegrityError("No habit found with the given name")
+            self.connection.commit()
+        except sqlite3.IntegrityError as e:
+            raise e
 
     def increment_counter(self, name: str, event_date: str = None) -> None:
         """Increment the counter in the database."""
         cursor = self.connection.cursor()
-        if not event_date:
-            event_date = date.today()
-        cursor.execute("INSERT INTO tracker VALUES (?, ?)", (event_date, name))
-        self.connection.commit()
+        try:           
+            cursor.execute("SELECT * FROM counter WHERE name=?", (name,))
+            habit_exists = cursor.fetchone()
+            if not habit_exists:
+                raise sqlite3.IntegrityError("No habit found with the given name")
+            
+            if not event_date:
+                event_date = datetime.today().date()
+            cursor.execute("INSERT INTO tracker VALUES (?, ?)", (str(event_date), name))
+            self.connection.commit()
+        except sqlite3.IntegrityError as e:
+            raise e
 
     def get_counter_data(self, name: str) -> list:
         """Get counter data from the database."""
@@ -80,11 +89,12 @@ class HabitDatabase:
     def calculate_streak(self, completed_dates: list) -> int:
         """Calculate streak based on completed dates."""
         streak = 0
-        current_date = date.today()
-        for completed_date in reversed(completed_dates):  
+        current_date = datetime.now().date()
+        for completed_date_str in reversed(completed_dates):
+            completed_date = datetime.strptime(completed_date_str, "%Y-%m-%d").date()
             if (current_date - completed_date).days <= 1:
                 streak += 1
-                current_date = completed_date
+                current_date = completed_date - timedelta(days=1)
             else:
                 break
         return streak
@@ -96,6 +106,13 @@ class HabitDatabase:
             habit_data = self.get_counter_data(habit_name)
             habit.completed_tasks = [row[0] for row in habit_data]
             self.increment_counter(habit_name, habit.completed_tasks[-1])  
+
+    def clear_database(self):
+        """Clear all data from the database."""
+        cursor = self.connection.cursor()
+        cursor.execute("DELETE FROM counter")
+        cursor.execute("DELETE FROM tracker")
+        self.connection.commit()        
 
     def close(self):
         """Close the database connection."""
