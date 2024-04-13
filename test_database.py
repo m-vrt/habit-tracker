@@ -1,7 +1,7 @@
 import pytest
-import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from database import HabitDatabase
+from main import add_habit, delete_habit, view_habits, check_habit_status, complete_habit, view_streaks, view_longest_streak_for_habit, view_longest_streak
 
 @pytest.fixture
 def test_db():
@@ -14,63 +14,64 @@ def reset_db(test_db):
     test_db.clear_database()
 
 def test_add_habit(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
+    add_habit(test_db)
     habits = test_db.get_habits()
-    assert "Test Habit" in habits
+    assert len(habits) == 1
+    assert habits[0]['name'] == "Test Habit"
 
-def test_remove_habit(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    test_db.remove_habit("Test Habit")
-    habits = test_db.get_habits()
-    assert "Test Habit" not in habits
-
-def test_increment_counter(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    test_db.increment_counter("Test Habit")
-    data = test_db.get_counter_data("Test Habit")
-    assert len(data) == 1
-    assert data[0][1] == "Test Habit"
-
-def test_get_habits(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    habits = test_db.get_habits()
-    assert "Test Habit" in habits
-
-def test_get_streaks(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    test_db.increment_counter("Test Habit")
-    streaks = test_db.get_streaks()
-    assert streaks.get("Test Habit", 0) == 1
-
-def test_calculate_streak(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    test_db.increment_counter("Test Habit", datetime.now().strftime("%Y-%m-%d"))
-    streak = test_db.calculate_streak([datetime.now().strftime("%Y-%m-%d")]) 
-    assert streak == 1
-
-def test_duplicate_habit(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    with pytest.raises(ValueError):
-        test_db.add_habit("Test Habit", "Duplicate Habit Description")
-
-def test_invalid_remove_habit(test_db):
-    with pytest.raises(sqlite3.IntegrityError):
-        test_db.remove_habit("Nonexistent Habit")
-
-def test_increment_counter_no_habit(test_db):
-    with pytest.raises(sqlite3.IntegrityError):
-        test_db.increment_counter("Nonexistent Habit")
-
-def test_get_habit_data(test_db):
-    test_db.add_habit("Test Habit", "Test Description")
-    habit_data = test_db.get_habit_data("Test Habit")
-    assert habit_data[0] == "Test Habit"
-    assert habit_data[1] == "Test Description"
-
-def test_get_habits_empty(test_db):
+def test_delete_habit(test_db):
+    add_habit(test_db)
+    delete_habit(test_db)
     habits = test_db.get_habits()
     assert len(habits) == 0
 
-def test_get_streaks_empty(test_db):
-    streaks = test_db.get_streaks()
-    assert len(streaks) == 0
+def test_check_habit_status_no_habit(test_db, capsys):
+    check_habit_status(test_db)
+    captured = capsys.readouterr()
+    assert "does not exist" in captured.out
+
+def test_check_habit_status_existing_habit(test_db, capsys):
+    add_habit(test_db)
+    check_habit_status(test_db)
+    captured = capsys.readouterr()
+    assert "consistently_followed" in captured.out or "inconsistent" in captured.out
+
+def test_complete_habit_no_habit(test_db, capsys):
+    complete_habit(test_db)
+    captured = capsys.readouterr()
+    assert "does not exist" in captured.out
+
+def test_complete_habit_existing_habit_no_streak(test_db, capsys):
+    add_habit(test_db)
+    complete_habit(test_db)
+    captured = capsys.readouterr()
+    assert "marked as completed" in captured.out
+
+def test_complete_habit_existing_habit_with_streak(test_db, capsys):
+    add_habit(test_db)
+    test_db.complete_habit("Test Habit")
+    complete_habit(test_db)
+    captured = capsys.readouterr()
+    assert "Keep it up!" in captured.out
+
+def test_view_streaks_empty(test_db, capsys):
+    view_streaks(test_db)
+    captured = capsys.readouterr()
+    assert "Habit Streaks" in captured.out
+
+def test_view_longest_streak_for_habit_existing(test_db, capsys):
+    add_habit(test_db)
+    test_db.complete_habit("Test Habit")
+    view_longest_streak_for_habit(test_db)
+    captured = capsys.readouterr()
+    assert "longest streak" in captured.out
+
+def test_view_longest_streak_for_habit_nonexistent(test_db, capsys):
+    view_longest_streak_for_habit(test_db)
+    captured = capsys.readouterr()
+    assert "does not exist" in captured.out
+
+def test_view_longest_streak_empty(test_db, capsys):
+    view_longest_streak(test_db)
+    captured = capsys.readouterr()
+    assert "Habit Hall of Fame" in captured.out

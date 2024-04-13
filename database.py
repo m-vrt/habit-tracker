@@ -16,45 +16,50 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         cursor.execute("""CREATE TABLE IF NOT EXISTS counter (
             name TEXT PRIMARY KEY,
-            description TEXT UNIQUE)""")
+            description TEXT UNIQUE,
+            periodicity TEXT,
+            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)""")
         cursor.execute("""CREATE TABLE IF NOT EXISTS tracker (
             date TEXT,
+            time TEXT,
             counterName TEXT,
             FOREIGN KEY(counterName) REFERENCES counter(name))""")
         self.connection.commit()
 
-    def add_habit(self, name: str, description: str) -> None:
+    def add_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
         try:
-            cursor.execute("INSERT INTO counter VALUES (?, ?)", (name, description))
+            cursor.execute("INSERT INTO counter VALUES (?, ?, ?)", (name, description, periodicity)) 
             self.connection.commit()
         except sqlite3.IntegrityError:
             raise ValueError(f"Habit with name '{name}' already exists.")
 
-    def remove_habit(self, name: str) -> None:
-        """Remove a habit from the database."""
+    def delete_habit(self, name: str) -> None:
+        """Delete a habit from the database."""
         cursor = self.connection.cursor()
         try:
             cursor.execute("DELETE FROM counter WHERE name=?", (name,))
             if cursor.rowcount == 0:
-                raise sqlite3.IntegrityError("No habit found with the given name")
+                raise ValueError("No habit found with the given name")
             self.connection.commit()
         except sqlite3.IntegrityError as e:
             raise e
 
-    def increment_counter(self, name: str, event_date: str = None) -> None:
+    def increment_counter(self, name: str, event_date: datetime = None, event_time: datetime = None) -> None:
         """Increment the counter in the database."""
         cursor = self.connection.cursor()
         try:           
             cursor.execute("SELECT * FROM counter WHERE name=?", (name,))
             habit_exists = cursor.fetchone()
             if not habit_exists:
-                raise sqlite3.IntegrityError("No habit found with the given name")
-            
+                raise ValueError("No habit found with the given name")
+        
             if not event_date:
                 event_date = datetime.today().date()
-            cursor.execute("INSERT INTO tracker VALUES (?, ?)", (str(event_date), name))
+            if not event_time:
+                event_time = datetime.now().time()
+            cursor.execute("INSERT INTO tracker VALUES (?, ?, ?)", (event_date, event_time, name))
             self.connection.commit()
         except sqlite3.IntegrityError as e:
             raise e

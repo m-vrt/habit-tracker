@@ -1,5 +1,4 @@
 from database import HabitDatabase
-from habit import Habit
 
 def get_tracked_habits(habit_database):
     """
@@ -18,8 +17,7 @@ def get_habits_by_periodicity(habit_database, periodicity):
     :param periodicity: Periodicity of habits to retrieve
     :return: List of habit names with the specified periodicity
     """
-    habits = habit_database.get_habits()
-    return [habit for habit in habits if habit.periodicity == periodicity]
+    return habit_database.get_habits_by_periodicity(periodicity)
 
 def get_longest_streak(habit_database):
     """
@@ -39,5 +37,5 @@ def get_longest_streak_for_habit(habit_database, habit_name):
     :param habit_name: Name of the habit to retrieve streak for
     :return: Longest run streak for the specified habit
     """
-    streaks = habit_database.view_streaks()
-    return streaks.get(habit_name, 0)
+    return habit_database.get_longest_streak_for_habit(habit_name)
+

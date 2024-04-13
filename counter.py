@@ -1,4 +1,4 @@
-import sqlite3
+from database import HabitDatabase
 
 class Counter:
     def __init__(self, name: str, description: str):
@@ -19,14 +19,10 @@ class Counter:
         """Reset the counter to 0."""
         self.count = 0
 
-    def store(self, db: sqlite3.Connection) -> None:
+    def store(self, habit_database: HabitDatabase) -> None:
         """Store the counter in the database."""
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO counter VALUES (?, ?)", (self.name, self.description))
-        db.commit()
+        habit_database.add_counter(self.name, self.description)
 
-    def add_event(self, db: sqlite3.Connection, date: str = None) -> None:
+    def add_event(self, habit_database: HabitDatabase, date: str = None) -> None:
         """Add an event to the counter in the database."""
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO tracker VALUES (?, ?)", (date, self.name))
-        db.commit()
+        habit_database.increment_counter(self.name, date)

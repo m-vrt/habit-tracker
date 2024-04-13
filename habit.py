@@ -4,19 +4,19 @@ from collections import Counter
 class Habit:
     """Represents a habit."""
 
-    def __init__(self, name, task_specification, periodicity, created_date):
+    def __init__(self, name, task_specification, periodicity, created_date=None):
         """
         Initialize a habit.
 
         :param name: Name of the habit
         :param task_specification: Description of the task
         :param periodicity: Periodicity of the habit (daily or weekly)
-        :param created_date: Date when the habit was created
+        :param created_date: Date when the habit was created (default is None)
         """
         self.name = name
         self.task_specification = task_specification
         self.periodicity = periodicity
-        self.created_date = created_date
+        self.created_date = created_date or datetime.now().date()
         self.completed_tasks = []
         self.streak_counter = Counter()
         self.streak = 0
@@ -28,23 +28,24 @@ class Habit:
 
         This method is called when a user completes a task associated with the habit.
         """
-        self.completed_tasks.append(datetime.now().date())
-        self.update_streak()
-        self.last_completed_date = datetime.now().date()  
+        completion_time = datetime.now()
+        self.completed_tasks.append(completion_time)
+        self.update_streak(completion_time)
+        self.last_completed_date = completion_time  
 
-    def update_streak(self):
+    def update_streak(self, completion_time):
         """
         Update streak based on consecutive completions within the defined period.
 
         This method updates the streak based on consecutive completions of tasks within
         the defined period for the habit.
         """
-        if self.check_if_streak_continues_within_period():
+        if self.check_if_streak_continues_within_period(completion_time):
             self.streak += 1
         else:
             self.streak = 1
 
-    def check_if_streak_continues_within_period(self):
+    def check_if_streak_continues_within_period(self, completion_time):
         """
         Check if the streak continues based on consecutive completions within the defined period.
 
@@ -52,8 +53,8 @@ class Habit:
         the completion date with the date of the last completed task within the defined period.
         """
         if len(self.completed_tasks) > 0:
-            last_completed_date = self.completed_tasks[-1]
-            current_date = datetime.now().date()
+            last_completed_time = self.completed_tasks[-1]
+            current_time = completion_time
                        
             if isinstance(self.periodicity, str):
                 if self.periodicity == 'daily':
@@ -65,8 +66,8 @@ class Habit:
             else:
                 periodicity_days = int(self.periodicity)
                 
-            period_start_date = current_date - timedelta(days=periodicity_days)
-            return period_start_date <= last_completed_date < current_date
+            period_start_time = current_time - timedelta(days=periodicity_days)
+            return period_start_time <= last_completed_time < current_time
         return False
 
     def is_task_completed_within_period(self, period):
@@ -79,9 +80,9 @@ class Habit:
         if not self.completed_tasks:
             return False
         
-        last_completed_date = self.completed_tasks[-1]
-        current_date = datetime.now().date()
-        return (current_date - last_completed_date).days <= period
+        last_completed_time = self.completed_tasks[-1]
+        current_time = datetime.now()
+        return (current_time - last_completed_time).days <= period
 
     def update_streak_within_period(self, period):
         """
