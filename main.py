@@ -27,9 +27,9 @@ def main():
         elif choice == "6":
             view_streaks(habit_database)
         elif choice == "7":
-            view_longest_streak(habit_database)
+            view_longest_streak_for_habit(habit_database)            
         elif choice == "8":
-            view_longest_streak_for_habit(habit_database)
+            view_longest_streak(habit_database)            
         elif choice == "9":
             print("Exiting the Habit Tracker...")
             break
@@ -167,7 +167,11 @@ def view_longest_streak_for_habit(habit_database):
 def view_longest_streak(habit_database):
     """View the longest streak for all habits."""
     longest_streak_habit, longest_streak = get_longest_streak(habit_database)
-    print(f"{longest_streak_habit} earns a spot in the Habit Hall of Fame with the longest streak of {longest_streak} days!")
+    if longest_streak_habit:
+        print(f"{longest_streak_habit} earns a spot in the Habit Hall of Fame with the longest streak of {longest_streak} days!")
+    else:
+        print("No habits tracked yet.")
+
 
 
 if __name__ == "__main__":
