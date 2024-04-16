@@ -67,7 +67,7 @@ def manage_habits_menu(habit_database, predefined_habits):
         if choice == "1":
             view_habits_menu(habit_database, predefined_habits)
         elif choice == "2":
-            clear_all_habits(habit_database, predefined_habits)
+            clear_all_habits(habit_database)
         elif choice == "3":
             break
         else:
@@ -213,12 +213,16 @@ def delete_habit(habit_database, habit_name):
     habit_database.delete_habit(habit_name)
     print(f"Habit ('{habit_name}') successfully deleted!\n")
 
-
 def clear_all_habits(habit_database):
     """Clear all habits."""
-    habit_database.clear_all_habits()
-    print("All habits cleared.\n")
+    user_defined_habits = habit_database.get_habits()
+    predefined_habits = habit_database.get_habits_by_periodicity()
 
+    if not user_defined_habits and not predefined_habits:
+        print("No habits to clear.\n")
+    else:
+        habit_database.clear_all_habits()
+        print("All habits cleared.\n")
 
 def view_habit_hall_of_fame_menu(habit_database):
     """Menu for viewing the Habit Hall of Fame."""

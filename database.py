@@ -70,10 +70,13 @@ class HabitDatabase:
         cursor.execute("SELECT name, description FROM habits")
         return [{'name': row[0], 'description': row[1]} for row in cursor.fetchall()]
 
-    def get_habits_by_periodicity(self, periodicity: str):
+    def get_habits_by_periodicity(self, periodicity=None):
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT name, description FROM habits WHERE periodicity=? AND is_predefined=0", (periodicity,))
+        if periodicity:
+            cursor.execute("SELECT name, description FROM habits WHERE periodicity=? AND is_predefined=0", (periodicity,))
+        else:
+            cursor.execute("SELECT name, description FROM habits WHERE is_predefined=0")
         return [{'name': row[0], 'description': row[1]} for row in cursor.fetchall()]
 
     def habit_exists(self, name: str) -> bool:
