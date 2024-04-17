@@ -117,6 +117,10 @@ def view_habits_menu(habit_database, predefined_habits):
         for habit in predefined_weekly_habits:
             print(f"{current_index}. {habit['name']} - {habit['description']}")
             current_index += 1
+    
+    if total_habits == 0:
+        manage_habits_menu(habit_database, predefined_habits)
+        return
 
     while True:
         choice = input("\nPlease enter the number of your choice: ").strip()

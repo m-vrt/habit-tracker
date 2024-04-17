@@ -15,22 +15,32 @@ class HabitDatabase:
     def create_tables(self) -> None:
         """Create necessary tables if they don't exist."""
         cursor = self.connection.cursor()
-        cursor.execute("""CREATE TABLE IF NOT EXISTS habits (
-            id INTEGER PRIMARY KEY,
-            name TEXT UNIQUE,
-            description TEXT,
-            periodicity TEXT,
-            created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            completed_date TEXT,
-            completed_time TEXT,
-            streak INTEGER DEFAULT 0,
-            counter INTEGER DEFAULT 0,
-            is_predefined INTEGER DEFAULT 0)""")
-        cursor.execute("""CREATE TABLE IF NOT EXISTS completions (
-            id INTEGER PRIMARY KEY,
-            habit_name TEXT,
-            completion_date TEXT,
-            FOREIGN KEY (habit_name) REFERENCES habits (name))""")
+        try:
+            cursor.execute("""CREATE TABLE IF NOT EXISTS habits (
+                id INTEGER PRIMARY KEY,
+                name TEXT UNIQUE,
+                description TEXT,
+                periodicity TEXT,
+                created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_date TEXT,
+                completed_time TEXT,
+                streak INTEGER DEFAULT 0,
+                counter INTEGER DEFAULT 0,
+                is_predefined INTEGER DEFAULT 0)""")
+            print("Habits table created successfully.")
+        except sqlite3.Error as e:
+            print("Error occurred while creating the habits table:", e)
+
+        try:
+            cursor.execute("""CREATE TABLE IF NOT EXISTS completions (
+                id INTEGER PRIMARY KEY,
+                habit_name TEXT,
+                completion_date TEXT,
+                FOREIGN KEY (habit_name) REFERENCES habits (name))""")
+            print("Completions table created successfully.")
+        except sqlite3.Error as e:
+            print("Error occurred while creating the completions table:", e)
+
         self.connection.commit()
 
     def add_habit(self, name: str, description: str, periodicity: str) -> None:
@@ -99,6 +109,16 @@ class HabitDatabase:
             return "consistently_followed"
         else:
             return "inconsistent"
+    
+    def view_current_streak(self, habit_name: str) -> int:
+        """View the current streak for a habit."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT streak FROM habits WHERE name=?", (habit_name,))
+        streak = cursor.fetchone()
+        if streak:
+            return streak[0]
+        else:
+            return 0
 
     def complete_habit(self, name: str) -> None:
         """Mark a habit as completed."""
