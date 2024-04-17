@@ -87,11 +87,13 @@ class HabitDatabase:
 
     def check_habit_status(self, name: str) -> str:
         """Check the status of a habit."""
-        if not self.habit_exists(name):
-            return None
         cursor = self.connection.cursor()
-        cursor.execute("SELECT completed_date FROM habits WHERE name=?", (name,))
+        cursor.execute("SELECT completed_date FROM habits WHERE name=? AND completed_date IS NOT NULL", (name,))
         completed_dates = [datetime.strptime(row[0], "%Y-%m-%d") for row in cursor.fetchall()]        
+    
+        if not completed_dates:
+            return "not_started"
+
         last_week = datetime.now() - timedelta(days=7)
         if any(date > last_week for date in completed_dates):
             return "consistently_followed"
