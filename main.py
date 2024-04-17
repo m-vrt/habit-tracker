@@ -41,18 +41,30 @@ def print_menu():
 def add_habit_menu(habit_database):
     """Menu for adding a new habit."""
     print("\nADD HABIT")
-    habit_name = input("Habit name: ").capitalize().strip()
-    habit_description = input("Habit description: ").capitalize().strip()
+       
+    while True:
+        habit_name = input("Habit name: ").strip()
+        if not habit_name:
+            print("Error: Habit name cannot be empty.")
+        else:
+            break  
+   
+    while True:
+        habit_description = input("Habit description: ").strip()
+        if not habit_description:
+            print("Error: Habit description cannot be empty.")
+        else:
+            break  
+           
     while True:
         periodicity = input("Daily or Weekly: ").capitalize().strip()
         if periodicity in ["Daily", "Weekly"]:
             break
         else:
             print("Error: Please enter either 'Daily' or 'Weekly'.")
-
-    habit_database.add_habit(habit_name, habit_description, periodicity)
-    print(f"Habit ('{habit_name}') successfully added to {periodicity} habits!\n")
-
+   
+    habit_database.add_habit(habit_name.capitalize(), habit_description.capitalize(), periodicity)
+    print(f"Habit ('{habit_name.capitalize()}') successfully added to {periodicity} Habits!\n")
 
 def manage_habits_menu(habit_database, predefined_habits):
     """Menu for managing habits."""

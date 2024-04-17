@@ -18,7 +18,7 @@ class HabitDatabase:
         try:
             cursor.execute("""CREATE TABLE IF NOT EXISTS habits (
                 id INTEGER PRIMARY KEY,
-                name TEXT UNIQUE,
+                name TEXT,
                 description TEXT,
                 periodicity TEXT,
                 created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -46,23 +46,17 @@ class HabitDatabase:
     def add_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
-        try:
-            cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 0)",
+        cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 0)",
                            (name, description, periodicity))
-            self.connection.commit()
-        except sqlite3.IntegrityError:
-            raise ValueError(f"Habit ('{name}') already exists.")
-
+        self.connection.commit()
+        
     def add_predefined_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a predefined habit to the database."""
         cursor = self.connection.cursor()
-        try:
-            cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 1)",
+        cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 1)",
                            (name, description, periodicity))
-            self.connection.commit()
-        except sqlite3.IntegrityError:
-            raise ValueError(f"Predefined habit ('{name}') already exists.")
-              
+        self.connection.commit()
+     
     def delete_habit(self, name: str) -> None:
         """Delete a habit from the database."""
         cursor = self.connection.cursor()
