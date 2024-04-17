@@ -25,4 +25,9 @@ class Counter:
 
     def add_event(self, habit_database: HabitDatabase, date: str = None) -> None:
         """Add an event to the counter in the database."""
-        habit_database.increment_counter(self.name, date)
+        habit_database.increment_counter(self.name, date)        
+        streak = habit_database.get_streak_for_habit(self.name)
+        if streak is not None:
+            habit_database.update_streak(self.name, streak + 1)
+        else:
+            habit_database.update_streak(self.name, 1)

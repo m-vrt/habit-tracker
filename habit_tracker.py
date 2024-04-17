@@ -1,4 +1,3 @@
-from datetime import datetime
 from database import HabitDatabase
 from habit import Habit
 
@@ -19,14 +18,12 @@ class HabitTracker:
         :param description: Description of the habit
         :param periodicity: Periodicity of the habit
         """
-       
         habit = Habit(name, description, periodicity)
-      
-        if habit.name in [h.name for h in self.habits]:
-            raise ValueError(f"Habit with name '{habit.name}' already exists.")
 
-        self.habit_database.add_habit(habit)
+        if self.habit_database.habit_exists(name):
+            raise ValueError(f"Habit with name '{name}' already exists.")
 
+        self.habit_database.add_habit(name, description, periodicity)
         self.habits.append(habit)
 
     def delete_habit(self, habit_name):
@@ -35,7 +32,7 @@ class HabitTracker:
 
         :param habit_name: Name of the habit to delete
         """
-        if habit_name in [habit.name for habit in self.habits]:
+        if self.habit_database.habit_exists(habit_name):
             self.habit_database.delete_habit(habit_name)
             self.habits = self.habit_database.get_habits()
             print(f"Habit {habit_name} deleted successfully.")
@@ -57,19 +54,21 @@ class HabitTracker:
         :param habit_name: Name of the habit to check
         :return: Status of the habit
         """
-        if habit_name in [habit.name for habit in self.habits]:
+        if self.habit_database.habit_exists(habit_name):
             return "Habit exists"
         else:
             return "No habits tracked"
 
-    def view_streaks(self):
+    def get_streaks(self):
         """View streaks for habits."""
-        streaks = self.habit_database.view_streaks()
+        streaks = self.habit_database.get_streaks()
         return streaks
 
     def update_database(self):
-        """Update the database with current habit data."""
-        self.habit_database.update_database()
+        """Update the database with current habit data."""       
+        for habit in self.habits:
+            streak = self.habit_database.get_streak_for_habit(habit.name)
+            self.habit_database.update_streak(habit.name, streak)
 
     def close_database(self):
         """Close the connection to the database."""

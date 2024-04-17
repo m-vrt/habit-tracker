@@ -1,3 +1,4 @@
+from datetime import datetime
 from database import HabitDatabase
 
 def get_tracked_habits(habit_database):
@@ -19,15 +20,29 @@ def get_habits_by_periodicity(habit_database, periodicity):
     """
     return habit_database.get_habits_by_periodicity(periodicity)
 
-def get_longest_streak(habit_database):
+def get_longest_streak(habit_database, periodicity=None):
     """
     Return the longest run streak of all defined habits.
 
     :param habit_database: Instance of HabitDatabase
-    :return: Longest run streak
+    :param periodicity: Periodicity of habits to consider (None for all habits)
+    :return: Tuple containing the habit name and longest run streak
     """
-    streaks = habit_database.view_streaks()
-    return max(streaks.values())
+    if periodicity:
+        habits = habit_database.get_habits_by_periodicity(periodicity)
+    else:
+        habits = habit_database.get_habits()
+
+    longest_streak = 0
+    longest_streak_habit = None
+
+    for habit in habits:
+        streak = habit_database.get_streak_for_habit(habit['name'])
+        if streak > longest_streak:
+            longest_streak = streak
+            longest_streak_habit = habit['name']
+
+    return longest_streak_habit, longest_streak
 
 def get_longest_streak_for_habit(habit_database, habit_name):
     """
@@ -39,3 +54,16 @@ def get_longest_streak_for_habit(habit_database, habit_name):
     """
     return habit_database.get_longest_streak_for_habit(habit_name)
 
+def view_predefined_habits_status(habit_database):
+    """View the status of predefined habits."""
+    print("\nPredefined Habits:")
+    predefined_habits = habit_database.get_predefined_habits()
+
+    for habit in predefined_habits:
+        status, last_completed_date, streak = habit_database.check_habit_status(habit['name'])
+        print(f"{habit['name']}: {status}")
+        if status != "not_started":
+            days_since_last_completed = (datetime.now() - last_completed_date).days
+            print(f"Days since last completion: {days_since_last_completed}")
+            print(f"Latest streak count: {streak}")
+        print()

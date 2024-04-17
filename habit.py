@@ -4,17 +4,17 @@ from collections import Counter
 class Habit:
     """Represents a habit."""
 
-    def __init__(self, name, task_specification, periodicity, created_date=None):
+    def __init__(self, name, description, periodicity, created_date=None):
         """
         Initialize a habit.
 
         :param name: Name of the habit
-        :param task_specification: Description of the task
+        :param description: Description of the task
         :param periodicity: Periodicity of the habit (daily or weekly)
         :param created_date: Date when the habit was created (default is None)
         """
         self.name = name
-        self.task_specification = task_specification
+        self.description = description
         self.periodicity = periodicity
         self.created_date = created_date or datetime.now().date()
         self.completed_tasks = []
@@ -56,16 +56,13 @@ class Habit:
             last_completed_time = self.completed_tasks[-1]
             current_time = completion_time
                        
-            if isinstance(self.periodicity, str):
-                if self.periodicity == 'daily':
-                    periodicity_days = 1
-                elif self.periodicity == 'weekly':
-                    periodicity_days = 7
-                else:
-                    raise ValueError("Invalid value for periodicity")
+            if self.periodicity == 'Daily':
+                periodicity_days = 1
+            elif self.periodicity == 'Weekly':
+                periodicity_days = 7
             else:
-                periodicity_days = int(self.periodicity)
-                
+                raise ValueError("Invalid value for periodicity")
+
             period_start_time = current_time - timedelta(days=periodicity_days)
             return period_start_time <= last_completed_time < current_time
         return False
@@ -92,4 +89,4 @@ class Habit:
         and resets the streak if the period has elapsed.
         """
         if not self.is_task_completed_within_period(period):
-            self.streak = 0  
+            self.streak = 0
