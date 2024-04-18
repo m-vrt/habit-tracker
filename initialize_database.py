@@ -1,5 +1,6 @@
 import random
 import string
+from datetime import datetime, timedelta
 from database import HabitDatabase
 
 def generate_unique_habit_name(existing_names):
@@ -22,10 +23,10 @@ def initialize_database():
     predefined_daily_habit_names = set()
     predefined_weekly_habit_names = set()
 
-    while len(predefined_daily_habit_names) < 10:
+    while len(predefined_daily_habit_names) < 5:
         predefined_daily_habit_names.add(generate_unique_habit_name(predefined_daily_habit_names | predefined_weekly_habit_names))
 
-    while len(predefined_weekly_habit_names) < 10:
+    while len(predefined_weekly_habit_names) < 5:
         predefined_weekly_habit_names.add(generate_unique_habit_name(predefined_daily_habit_names | predefined_weekly_habit_names))
 
     for habit_name in predefined_daily_habit_names:
@@ -41,7 +42,14 @@ def initialize_database():
     for habit in predefined_habits:
         habit_database.mark_habit_as_predefined(habit['name'])
 
-    return predefined_habits, habit_database
+       
+        start_date = datetime.now() - timedelta(days=28)
+        for _ in range(28):
+            completion_date = start_date + timedelta(days=random.randint(0, 3))  
+            status = random.choice(["not_started", "inconsistent", "consistently_followed"])  
+            habit_database.add_tracking_data(habit['name'], completion_date, status)
 
+    return predefined_habits
 
-
+if __name__ == "__main__":
+    initialize_database()

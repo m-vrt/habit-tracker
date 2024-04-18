@@ -5,11 +5,11 @@ from initialize_database import initialize_database
 from analytics import *
 
 
-def main():
+def main(habit_database):
     """Main function to initialize and run the Habit Tracker."""
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
 
-    predefined_habits, habit_database = initialize_database()
+    predefined_habits = initialize_database()
 
     while True:
         print_menu()
@@ -305,4 +305,5 @@ def view_longest_streak_menu(habit_database, periodicity=None):
 
 
 if __name__ == "__main__":
-    main()
+    habit_database = HabitDatabase() 
+    main(habit_database)

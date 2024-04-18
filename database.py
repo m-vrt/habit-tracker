@@ -176,6 +176,12 @@ class HabitDatabase:
         cursor.execute("UPDATE habits SET is_predefined = 1 WHERE name = ?", (habit_name,))
         self.connection.commit()
 
+    def add_tracking_data(self, habit_name: str, completion_date: str, status: str) -> None:
+        """Add tracking data for a habit."""
+        cursor = self.connection.cursor()
+        cursor.execute("INSERT INTO completions (habit_name, completion_date) VALUES (?, ?)", (habit_name, completion_date))
+        self.connection.commit()
+
     def close(self):
         """Close the database connection."""
         self.connection.close()
