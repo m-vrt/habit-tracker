@@ -26,8 +26,7 @@ class HabitDatabase:
                 completed_time TEXT,
                 streak INTEGER DEFAULT 0,
                 counter INTEGER DEFAULT 0,
-                is_predefined INTEGER DEFAULT 0)""")
-            print("Habits table created successfully.")
+                is_predefined INTEGER DEFAULT 0)""")            
         except sqlite3.Error as e:
             print("Error occurred while creating the habits table:", e)
 
@@ -36,8 +35,7 @@ class HabitDatabase:
                 id INTEGER PRIMARY KEY,
                 habit_name TEXT,
                 completion_date TEXT,
-                FOREIGN KEY (habit_name) REFERENCES habits (name))""")
-            print("Completions table created successfully.")
+                FOREIGN KEY (habit_name) REFERENCES habits (name))""")         
         except sqlite3.Error as e:
             print("Error occurred while creating the completions table:", e)
 
@@ -170,6 +168,12 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM habits")
         cursor.execute("DELETE FROM completions")
+        self.connection.commit()
+
+    def mark_habit_as_predefined(self, habit_name):
+        """Mark a habit as predefined."""
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE habits SET is_predefined = 1 WHERE name = ?", (habit_name,))
         self.connection.commit()
 
     def close(self):

@@ -20,7 +20,6 @@ def initialize_database():
     predefined_habits = []
 
     predefined_daily_habit_names = set()
-
     predefined_weekly_habit_names = set()
 
     while len(predefined_daily_habit_names) < 10:
@@ -39,5 +38,10 @@ def initialize_database():
         habit_database.add_predefined_habit(habit_name, description, "Weekly")
         predefined_habits.append({"name": habit_name, "description": description, "periodicity": "Weekly"})
 
-    return predefined_habits, habit_database  
+    for habit in predefined_habits:
+        habit_database.mark_habit_as_predefined(habit['name'])
+
+    return predefined_habits, habit_database
+
+
 
