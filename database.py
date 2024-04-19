@@ -114,9 +114,13 @@ class HabitDatabase:
 
     def complete_habit(self, name: str) -> None:
         """Mark a habit as completed."""
+        completion_date = datetime.now()
+        completion_date_str = completion_date.strftime("%Y-%m-%d")
+        completion_time_str = completion_date.strftime("%H:%M:%S")
         cursor = self.connection.cursor()
-        cursor.execute("UPDATE habits SET completed_date=? WHERE name=?", (datetime.now().strftime("%Y-%m-%d"), name))
+        cursor.execute("UPDATE habits SET completed_date=?, completed_time=? WHERE name=?", (completion_date_str, completion_time_str, name))
         self.connection.commit()
+
 
     def get_streak_for_habit(self, name: str) -> int:
         """Get the streak for a specific habit."""
@@ -180,6 +184,18 @@ class HabitDatabase:
         """Add tracking data for a habit."""
         cursor = self.connection.cursor()
         cursor.execute("INSERT INTO completions (habit_name, completion_date) VALUES (?, ?)", (habit_name, completion_date))
+        self.connection.commit()
+
+    def get_predefined_habits(self):
+        """Get the list of predefined habits."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT name FROM habits WHERE is_predefined=1")
+        return [row[0] for row in cursor.fetchall()]
+    
+    def clear_all_predefined_habits(self):
+        """Clear all predefined habits from the database."""
+        cursor = self.connection.cursor()
+        cursor.execute("DELETE FROM habits WHERE is_predefined=1")
         self.connection.commit()
 
     def close(self):

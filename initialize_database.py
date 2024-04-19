@@ -1,52 +1,47 @@
 import random
-import string
 from datetime import datetime, timedelta
 from database import HabitDatabase
-
-def generate_unique_habit_name(existing_names):
-    """Generate a unique habit name."""
-    while True:
-        name = ''.join(random.choices(string.ascii_lowercase, k=8)).capitalize()
-        if name not in existing_names:
-            return name
-
-def capitalize_first_letter(sentence):
-    """Capitalize the first letter of each word in a sentence."""
-    return ' '.join(word.capitalize() for word in sentence.split())
 
 def initialize_database():
     """Initialize the database with predefined habits and example tracking data."""
     habit_database = HabitDatabase()
+    
+    if len(habit_database.get_predefined_habits()) > 10:        
+        habit_database.clear_all_predefined_habits()
 
     predefined_habits = []
 
-    predefined_daily_habit_names = set()
-    predefined_weekly_habit_names = set()
+    predefined_daily_habits = [
+        {"name": "Study", "description": "Study current module.", "periodicity": "Daily"},
+        {"name": "Code", "description": "Practice coding.", "periodicity": "Daily"},
+        {"name": "Research", "description": "Do some research.", "periodicity": "Daily"},
+        {"name": "Drink Water", "description": "Stay hydrated.", "periodicity": "Daily"},
+        {"name": "Exercise", "description": "Get some form of exercise.", "periodicity": "Daily"}
+    ]
 
-    while len(predefined_daily_habit_names) < 5:
-        predefined_daily_habit_names.add(generate_unique_habit_name(predefined_daily_habit_names | predefined_weekly_habit_names))
+    predefined_weekly_habits = [
+        {"name": "Grocery Shopping", "description": "Buy groceries for next week.", "periodicity": "Weekly"},
+        {"name": "Clean House", "description": "Do household chores.", "periodicity": "Weekly"},
+        {"name": "Go Out", "description": "Get some fresh air.", "periodicity": "Weekly"},
+        {"name": "Call Family", "description": "Check in with family members.", "periodicity": "Weekly"},
+        {"name": "Review Goals", "description": "Reflect on personal goals.", "periodicity": "Weekly"}
+    ]
 
-    while len(predefined_weekly_habit_names) < 5:
-        predefined_weekly_habit_names.add(generate_unique_habit_name(predefined_daily_habit_names | predefined_weekly_habit_names))
+    for habit in predefined_daily_habits:
+        habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
+        predefined_habits.append(habit)
 
-    for habit_name in predefined_daily_habit_names:
-        description = capitalize_first_letter(f"Description for {habit_name}")
-        habit_database.add_predefined_habit(habit_name, description, "Daily")
-        predefined_habits.append({"name": habit_name, "description": description, "periodicity": "Daily"})
-
-    for habit_name in predefined_weekly_habit_names:
-        description = capitalize_first_letter(f"Description for {habit_name}")
-        habit_database.add_predefined_habit(habit_name, description, "Weekly")
-        predefined_habits.append({"name": habit_name, "description": description, "periodicity": "Weekly"})
+    for habit in predefined_weekly_habits:
+        habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
+        predefined_habits.append(habit)
 
     for habit in predefined_habits:
         habit_database.mark_habit_as_predefined(habit['name'])
-
-       
-        start_date = datetime.now() - timedelta(days=28)
-        for _ in range(28):
-            completion_date = start_date + timedelta(days=random.randint(0, 3))  
-            status = random.choice(["not_started", "inconsistent", "consistently_followed"])  
+      
+        start_date = datetime.now() - timedelta(days=28 * 4)  
+        for _ in range(28 * 4):  
+            completion_date = start_date + timedelta(days=random.randint(0, 3))
+            status = random.choice(["not_started", "inconsistent", "consistently_followed"])
             habit_database.add_tracking_data(habit['name'], completion_date, status)
 
     return predefined_habits
