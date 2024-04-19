@@ -191,6 +191,8 @@ def mark_habit_as_done(habit_database, habit_name):
     
     if habit_database.check_habit_done_today(habit_name, today_date):
         print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today.\n")
+    elif habit_database.is_predefined_habit(habit_name):
+        print(f"~ Sorry, but predefined habits like the habit ('{habit_name}') cannot be marked as Done.\n")
     else:
         habit_database.complete_habit(habit_name)
         print(f"~ Hurray! Habit ('{habit_name}') marked as Done for today.\n")
@@ -212,23 +214,6 @@ def check_habit_status(habit_database, habit_name):
     else:
         print("Error: Unexpected return value from habit_database.check_habit_status")
 
-def view_predefined_habits_status(habit_database):
-    """View the status of predefined habits."""
-    print("\nPredefined Habits:")
-    predefined_habits = habit_database.get_predefined_habits()
-
-    for habit in predefined_habits:
-        status_tuple = habit_database.check_habit_status(habit['name'])
-        if len(status_tuple) == 3:
-            status, last_completion_date, streak = status_tuple
-            print(f"{habit['name']}: {status}")
-            if status != "not_started":
-                days_since_last_completion = (datetime.now() - last_completion_date).days
-                print(f"Days since last completion: {days_since_last_completion}")
-                print(f"Latest streak count: {streak}")
-            print()
-        else:
-            print("Error: Unexpected return value from habit_database.check_habit_status")
 
 def view_current_streak(habit_database, habit_name):
     """View the current streak of a habit."""

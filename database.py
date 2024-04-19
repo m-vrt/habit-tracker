@@ -115,23 +115,22 @@ class HabitDatabase:
 
     def complete_habit(self, name: str) -> None:
         """Mark a habit as completed."""
-        completion_date = datetime.now().date() 
-        completion_time = datetime.now().time()  
-
-       
+        completion_date = datetime.now().strftime("%Y-%m-%d")
+        completion_time = datetime.now().strftime("%H:%M:%S")  
+        
         if self.check_habit_done_today(name, completion_date):
             return 
 
         cursor = self.connection.cursor()
 
         try:
-            
+        
             cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=?", 
-                           (completion_date, completion_time, name))
+                       (completion_date, completion_time, name))
 
-            
+        
             cursor.execute("INSERT INTO completions (habit_name, completion_date, completion_time) VALUES (?, ?, ?)",
-                           (name, completion_date, completion_time))
+                       (name, completion_date, completion_time))
 
             self.connection.commit()
         except Exception as e:
@@ -212,6 +211,15 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM habits WHERE is_predefined=1")
         self.connection.commit()
+
+    def is_predefined_habit(self, habit_name: str) -> bool:
+        """Check if a habit is predefined."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT is_predefined FROM habits WHERE name=?", (habit_name,))
+        result = cursor.fetchone()
+        if result:
+            return bool(result[0])
+        return False
 
     def close(self):
         """Close the database connection."""

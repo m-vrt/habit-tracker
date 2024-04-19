@@ -60,10 +60,45 @@ def view_predefined_habits_status(habit_database):
     predefined_habits = habit_database.get_predefined_habits()
 
     for habit in predefined_habits:
-        status, last_completion_date, streak = habit_database.check_habit_status(habit['name'])
-        print(f"{habit['name']}: {status}")
-        if status != "not_started":
-            days_since_last_completion = (datetime.now() - last_completion_date).days
-            print(f"Days since last completion: {days_since_last_completion}")
-            print(f"Latest streak count: {streak}")
-        print()
+        completion_history = habit_database.get_completion_history(habit['name'])
+        if completion_history:
+            total_completions = len(completion_history)
+            average_completion_rate = total_completions / (len(completion_history) / 28)  
+            longest_streak = calculate_longest_streak(completion_history)
+            average_streak_length = calculate_average_streak_length(completion_history)
+            
+            print(f"{habit['name']}:")
+            print(f"Total completions: {total_completions}")
+            print(f"Average completion rate (per week): {average_completion_rate:.2f}")
+            print(f"Longest streak: {longest_streak}")
+            print(f"Average streak length: {average_streak_length:.2f}")
+            print()
+        else:
+            print(f"{habit['name']}: No historical data available\n")
+
+def calculate_longest_streak(completion_history):
+    """Calculate the longest streak from completion history."""
+    longest_streak = 0
+    current_streak = 0
+    for i in range(1, len(completion_history)):
+        if (completion_history[i] - completion_history[i - 1]).days == 1:
+            current_streak += 1
+        else:
+            longest_streak = max(longest_streak, current_streak)
+            current_streak = 0
+    return longest_streak
+
+def calculate_average_streak_length(completion_history):
+    """Calculate the average streak length from completion history."""
+    streak_lengths = []
+    current_streak = 0
+    for i in range(1, len(completion_history)):
+        if (completion_history[i] - completion_history[i - 1]).days == 1:
+            current_streak += 1
+        else:
+            streak_lengths.append(current_streak)
+            current_streak = 0
+    if streak_lengths:
+        return sum(streak_lengths) / len(streak_lengths)
+    else:
+        return 0
