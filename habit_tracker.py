@@ -21,10 +21,11 @@ class HabitTracker:
         habit = Habit(name, description, periodicity)
 
         if self.habit_database.habit_exists(name):
-            raise ValueError(f"Habit with name '{name}' already exists.")
-
-        self.habit_database.add_habit(name, description, periodicity)
-        self.habits.append(habit)
+            return False
+        else:
+            self.habit_database.add_habit(name, description, periodicity)
+            self.habits.append(habit)
+            return True
 
     def delete_habit(self, habit_name):
         """
@@ -35,9 +36,9 @@ class HabitTracker:
         if self.habit_database.habit_exists(habit_name):
             self.habit_database.delete_habit(habit_name)
             self.habits = self.habit_database.get_habits()
-            print(f"Habit {habit_name} deleted successfully.")
+            return True
         else:
-            raise ValueError(f"No habit with name '{habit_name}' found.")
+            return False
 
     def get_habits(self):
         """

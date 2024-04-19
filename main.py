@@ -235,7 +235,6 @@ def view_current_streak(habit_database, habit_name):
     streak = habit_database.get_streak_for_habit(habit_name)
     print(f"Current streak for habit ('{habit_name}') is {streak}.\n")
 
-
 def delete_habit(habit_database, habit_name):
     """Delete a habit."""
     habit_deleted = habit_database.delete_habit(habit_name)
