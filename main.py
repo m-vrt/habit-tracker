@@ -180,8 +180,8 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
             view_current_streak(habit_database, selected_habit['name'])
             break
         elif choice == "4":
-            delete_habit(habit_database, selected_habit['name'])
-            break
+            if delete_habit(habit_database, selected_habit['name']):
+                break
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
@@ -237,10 +237,14 @@ def view_current_streak(habit_database, habit_name):
 
 def delete_habit(habit_database, habit_name):
     """Delete a habit."""
-    habit_deleted = habit_database.delete_habit(habit_name)
-    if habit_deleted:
+    habit_deleted = False
+    try:
+        habit_database.delete_habit(habit_name)
         print(f"~ Habit ('{habit_name}') successfully deleted!\n")
-    return habit_deleted  
+        habit_deleted = True
+    except ValueError as e:
+        print(e)
+    return habit_deleted
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
