@@ -20,7 +20,7 @@ class Habit:
         self.completed_tasks = []
         self.streak_counter = Counter()
         self.streak = 0
-        self.last_completed_date = None  
+        self.last_completion_date = None  
 
     def complete_task(self):
         """
@@ -31,7 +31,7 @@ class Habit:
         completion_time = datetime.now()
         self.completed_tasks.append(completion_time)
         self.update_streak(completion_time)
-        self.last_completed_date = completion_time  
+        self.last_completion_date = completion_time  
 
     def update_streak(self, completion_time):
         """
@@ -53,7 +53,7 @@ class Habit:
         the completion date with the date of the last completed task within the defined period.
         """
         if len(self.completed_tasks) > 0:
-            last_completed_time = self.completed_tasks[-1]
+            last_completion_time = self.completed_tasks[-1]
             current_time = completion_time
                        
             if self.periodicity == 'Daily':
@@ -64,7 +64,7 @@ class Habit:
                 raise ValueError("Invalid value for periodicity")
 
             period_start_time = current_time - timedelta(days=periodicity_days)
-            return period_start_time <= last_completed_time < current_time
+            return period_start_time <= last_completion_time < current_time
         return False
 
     def is_task_completed_within_period(self, period):
@@ -77,9 +77,9 @@ class Habit:
         if not self.completed_tasks:
             return False
         
-        last_completed_time = self.completed_tasks[-1]
+        last_completion_time = self.completed_tasks[-1]
         current_time = datetime.now()
-        return (current_time - last_completed_time).days <= period
+        return (current_time - last_completion_time).days <= period
 
     def update_streak_within_period(self, period):
         """

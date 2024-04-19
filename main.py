@@ -220,11 +220,11 @@ def view_predefined_habits_status(habit_database):
     for habit in predefined_habits:
         status_tuple = habit_database.check_habit_status(habit['name'])
         if len(status_tuple) == 3:
-            status, last_completed_date, streak = status_tuple
+            status, last_completion_date, streak = status_tuple
             print(f"{habit['name']}: {status}")
             if status != "not_started":
-                days_since_last_completed = (datetime.now() - last_completed_date).days
-                print(f"Days since last completion: {days_since_last_completed}")
+                days_since_last_completion = (datetime.now() - last_completion_date).days
+                print(f"Days since last completion: {days_since_last_completion}")
                 print(f"Latest streak count: {streak}")
             print()
         else:

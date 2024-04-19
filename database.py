@@ -22,8 +22,8 @@ class HabitDatabase:
                 description TEXT,
                 periodicity TEXT,
                 created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                completed_date TEXT,
-                completed_time TEXT,
+                completion_date TEXT,
+                completion_time TEXT,
                 streak INTEGER DEFAULT 0,
                 counter INTEGER DEFAULT 0,
                 is_predefined INTEGER DEFAULT 0)""")            
@@ -35,6 +35,7 @@ class HabitDatabase:
                 id INTEGER PRIMARY KEY,
                 habit_name TEXT,
                 completion_date TEXT,
+                completion_time TEXT,          
                 FOREIGN KEY (habit_name) REFERENCES habits (name))""")         
         except sqlite3.Error as e:
             print("Error occurred while creating the completions table:", e)
@@ -90,14 +91,14 @@ class HabitDatabase:
     def check_habit_status(self, name: str) -> str:
         """Check the status of a habit."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT completed_date FROM habits WHERE name=? AND completed_date IS NOT NULL", (name,))
-        completed_dates = [datetime.strptime(row[0], "%Y-%m-%d") for row in cursor.fetchall()]        
+        cursor.execute("SELECT completion_date FROM habits WHERE name=? AND completion_date IS NOT NULL", (name,))
+        completion_dates = [datetime.strptime(row[0], "%Y-%m-%d") for row in cursor.fetchall()]        
     
-        if not completed_dates:
+        if not completion_dates:
             return "not_started"
 
         last_week = datetime.now() - timedelta(days=7)
-        if any(date > last_week for date in completed_dates):
+        if any(date > last_week for date in completion_dates):
             return "consistently_followed"
         else:
             return "inconsistent"
@@ -114,13 +115,27 @@ class HabitDatabase:
 
     def complete_habit(self, name: str) -> None:
         """Mark a habit as completed."""
-        completion_date = datetime.now()
-        completion_date_str = completion_date.strftime("%Y-%m-%d")
-        completion_time_str = completion_date.strftime("%H:%M:%S")
-        cursor = self.connection.cursor()
-        cursor.execute("UPDATE habits SET completed_date=?, completed_time=? WHERE name=?", (completion_date_str, completion_time_str, name))
-        self.connection.commit()
+        completion_date = datetime.now().date() 
+        completion_time = datetime.now().time()  
 
+       
+        if self.check_habit_done_today(name, completion_date):
+            return 
+
+        cursor = self.connection.cursor()
+
+        try:
+            
+            cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=?", 
+                           (completion_date, completion_time, name))
+
+            
+            cursor.execute("INSERT INTO completions (habit_name, completion_date, completion_time) VALUES (?, ?, ?)",
+                           (name, completion_date, completion_time))
+
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
 
     def get_streak_for_habit(self, name: str) -> int:
         """Get the streak for a specific habit."""
@@ -140,8 +155,8 @@ class HabitDatabase:
         cursor.execute("SELECT * FROM habits WHERE name=?", (name,))
         row = cursor.fetchone()
         if row:
-            id, name, description, periodicity, created_date, completed_date, completed_time, streak, counter = row
-            return Habit(id, name, description, periodicity, created_date, completed_date, completed_time, streak, counter)
+            id, name, description, periodicity, created_date, completion_date, completion_time, streak, counter = row
+            return Habit(id, name, description, periodicity, created_date, completion_date, completion_time, streak, counter)
         else:
             return None
     
@@ -155,7 +170,7 @@ class HabitDatabase:
         """Increment the counter for a specific habit."""
         cursor = self.connection.cursor()
         if date:
-            cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name = ? AND completed_date = ?", (name, date))
+            cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name = ? AND completion_date = ?", (name, date))
         else:
             cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name = ?", (name,))
         self.connection.commit()
@@ -163,7 +178,7 @@ class HabitDatabase:
     def check_habit_done_today(self, habit_name: str, date: str) -> bool:
         """Check if a habit has been marked as done on the given date."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completed_date=?", (habit_name, date))
+        cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date=?", (habit_name, date))
         count = cursor.fetchone()[0]
         return count > 0
 
