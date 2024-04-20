@@ -2,7 +2,6 @@ import sqlite3
 from datetime import datetime, timedelta
 from habit import Habit
 
-
 class HabitDatabase:
     """Handles interactions with the SQLite database for habit tracking."""
 
@@ -25,8 +24,7 @@ class HabitDatabase:
                 completion_date TEXT,
                 completion_time TEXT,
                 streak INTEGER DEFAULT 0,
-                counter INTEGER DEFAULT 0,
-                is_predefined INTEGER DEFAULT 0)""")            
+                counter INTEGER DEFAULT 0)""")            
         except sqlite3.Error as e:
             print("Error occurred while creating the habits table:", e)
 
@@ -40,20 +38,29 @@ class HabitDatabase:
         except sqlite3.Error as e:
             print("Error occurred while creating the completions table:", e)
 
+        try:
+            cursor.execute("""CREATE TABLE IF NOT EXISTS predefined_habits (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                description TEXT,
+                periodicity TEXT)""")         
+        except sqlite3.Error as e:
+            print("Error occurred while creating the predefined_habits table:", e)
+
         self.connection.commit()
 
     def add_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 0)",
-                           (name, description, periodicity))
+        cursor.execute("INSERT INTO habits (name, description, periodicity) VALUES (?, ?, ?)",
+                       (name, description, periodicity))
         self.connection.commit()
         
     def add_predefined_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a predefined habit to the database."""
         cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO habits (name, description, periodicity, is_predefined) VALUES (?, ?, ?, 1)",
-                           (name, description, periodicity))
+        cursor.execute("INSERT INTO predefined_habits (name, description, periodicity) VALUES (?, ?, ?)",
+                       (name, description, periodicity))
         self.connection.commit()
      
     def delete_habit(self, name: str) -> None:
@@ -88,9 +95,9 @@ class HabitDatabase:
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
         if periodicity:
-            cursor.execute("SELECT name, description FROM habits WHERE periodicity=? AND is_predefined=0", (periodicity,))
+            cursor.execute("SELECT name, description FROM habits WHERE periodicity=?", (periodicity,))
         else:
-            cursor.execute("SELECT name, description FROM habits WHERE is_predefined=0")
+            cursor.execute("SELECT name, description FROM habits")
         return [{'name': row[0], 'description': row[1]} for row in cursor.fetchall()]
 
     def habit_exists(self, name: str) -> bool:

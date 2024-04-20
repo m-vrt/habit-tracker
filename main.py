@@ -161,7 +161,7 @@ def view_habits_menu(habit_database, predefined_habits):
 
 def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
     """Menu for managing a selected habit."""
-    print(f"\nHabit: {selected_habit['name']}")
+    print(f"\n[Habit: {selected_habit['name']}]")
     print("1. Mark habit as Done")
     print("2. Check habit status")
     print("3. View current streak")
@@ -201,7 +201,6 @@ def delete_habit(habit_database, habit_name):
     try:
         if habit_database.is_predefined_habit(habit_name):            
             habit_database.delete_predefined_habit(habit_name)
-            print(f"~ Predefined habit ('{habit_name}') successfully deleted!\n")
         else:          
             habit_database.delete_habit(habit_name)
             print(f"~ Habit ('{habit_name}') successfully deleted!\n")
@@ -300,4 +299,7 @@ def view_longest_streak_menu(habit_database, periodicity=None):
 
 if __name__ == "__main__":
     habit_database = HabitDatabase() 
-    main(habit_database)
+    try:
+        main(habit_database)
+    finally:
+        habit_database.close()
