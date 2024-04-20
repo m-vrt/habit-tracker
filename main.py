@@ -180,10 +180,35 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
             view_current_streak(habit_database, selected_habit['name'])
             break
         elif choice == "4":
-            if delete_habit(habit_database, selected_habit['name']):
-                break
+            if periodicity == "Predefined":
+                delete_predefined_habit(habit_database, selected_habit['name'])
+            else:
+                delete_habit(habit_database, selected_habit['name'])
+            return True 
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
+       
+def delete_predefined_habit(habit_database, habit_name):
+    """Delete a predefined habit."""
+    try:
+        habit_database.delete_predefined_habit(habit_name)
+        print(f"~ Predefined habit ('{habit_name}') successfully deleted!\n")
+    except ValueError as e:
+        print(e)
+
+def delete_habit(habit_database, habit_name):
+    """Delete a habit."""
+    try:
+        if habit_database.is_predefined_habit(habit_name):            
+            habit_database.delete_predefined_habit(habit_name)
+            print(f"~ Predefined habit ('{habit_name}') successfully deleted!\n")
+        else:          
+            habit_database.delete_habit(habit_name)
+            print(f"~ Habit ('{habit_name}') successfully deleted!\n")
+        return True
+    except ValueError as e:
+        print(e)
+        return False
 
 def mark_habit_as_done(habit_database, habit_name):
     """Marks a habit as Done."""
@@ -220,42 +245,23 @@ def view_current_streak(habit_database, habit_name):
     streak = habit_database.get_streak_for_habit(habit_name)
     print(f"Current streak for habit ('{habit_name}') is {streak}.\n")
 
-def delete_habit(habit_database, habit_name):
-    """Delete a habit."""
-    habit_deleted = False
-    try:
-        habit_database.delete_habit(habit_name)
-        print(f"~ Habit ('{habit_name}') successfully deleted!\n")
-        habit_deleted = True
-    except ValueError as e:
-        print(e)
-    return habit_deleted
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
     user_defined_habits = habit_database.get_habits()
     predefined_habits = habit_database.get_predefined_habits()
 
-    print("User Defined Habits:", user_defined_habits)
-    print("Predefined Habits:", predefined_habits)
-
     if not user_defined_habits and not predefined_habits:
         print("~ No habits to clear.\n")
         return
 
-    habit_deleted = False
     for habit in user_defined_habits:
-        if delete_habit(habit_database, habit['name']):
-            habit_deleted = True
+        habit_database.delete_habit(habit['name'])
+
     for habit in predefined_habits:
-        if delete_habit(habit_database, habit['name']):
-            habit_deleted = True
+        habit_database.delete_habit(habit['name'])
 
-    if not habit_deleted:
-        print("~ No habits to clear.\n")
-    else:
-        print("~ All habits cleared.\n")
-
+    print("~ All habits cleared.\n")
 
 def view_habit_hall_of_fame_menu(habit_database):
     """Menu for viewing the Habit Hall of Fame."""

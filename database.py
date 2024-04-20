@@ -67,6 +67,17 @@ class HabitDatabase:
         except sqlite3.IntegrityError as e:
             raise e
 
+    def delete_predefined_habit(self, name: str) -> None:
+        """Delete a predefined habit from the database."""
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute("DELETE FROM predefined_habits WHERE name=?", (name,))
+            if cursor.rowcount == 0:
+                raise ValueError("No predefined habit found with the given name")
+            self.connection.commit()
+        except sqlite3.IntegrityError as e:
+            raise e
+
     def get_habits(self):
         """Get the list of habits."""
         cursor = self.connection.cursor()
