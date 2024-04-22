@@ -3,12 +3,11 @@ from datetime import datetime, timedelta
 from database import HabitDatabase
 
 def initialize_database():
-    """Initialize the database with predefined habits and example tracking data."""
+    """Initialize the database with predefined habits."""
     habit_database = HabitDatabase()
     
-    try:
-        if len(habit_database.get_predefined_habits()) > 10:        
-            habit_database.clear_all_predefined_habits()
+    try:       
+        habit_database.clear_all_predefined_habits()
 
         predefined_habits = []
 
@@ -29,14 +28,12 @@ def initialize_database():
         ]
 
         for habit in predefined_daily_habits:
-            if habit not in predefined_habits:
-                habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
-                predefined_habits.append(habit)
+            habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
+            predefined_habits.append(habit)
 
         for habit in predefined_weekly_habits:
-            if habit not in predefined_habits:
-                habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
-                predefined_habits.append(habit)
+            habit_database.add_predefined_habit(habit["name"], habit["description"], habit["periodicity"])
+            predefined_habits.append(habit)
 
         for habit in predefined_habits:
             habit_database.mark_habit_as_predefined(habit['name'])
