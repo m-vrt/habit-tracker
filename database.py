@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime, timedelta
+from typing import List, Tuple, Dict
 from habit import Habit
+
 
 class HabitDatabase:
     """Handles interactions with the SQLite database for habit tracking."""
@@ -218,25 +220,33 @@ class HabitDatabase:
         cursor.execute("INSERT INTO completions (habit_name, completion_date) VALUES (?, ?)", (habit_name, completion_date))
         self.connection.commit()
 
-    def get_predefined_habits(self):
+    def get_predefined_habits(self) -> List[str]:
         """Get the list of predefined habits."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT name FROM habits WHERE is_predefined=1")
+        cursor.execute("SELECT name FROM predefined_habits")
         return [row[0] for row in cursor.fetchall()]
+
+    def get_predefined_habits_by_periodicity(self, periodicity: str) -> List[Dict[str, str]]:
+        """Get predefined habits by periodicity."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT name, description, periodicity FROM predefined_habits WHERE periodicity=?", (periodicity,))
+        rows = cursor.fetchall()
+        return [{'name': row[0], 'description': row[1], 'periodicity': row[2]} for row in rows]
     
     def clear_all_predefined_habits(self):
         """Clear all predefined habits from the database."""
         cursor = self.connection.cursor()
-        cursor.execute("DELETE FROM habits WHERE is_predefined=1")
+        cursor.execute("DELETE FROM predefined_habits")
+        cursor.execute("DELETE FROM completions")
         self.connection.commit()
 
     def is_predefined_habit(self, habit_name: str) -> bool:
         """Check if a habit is predefined."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT is_predefined FROM habits WHERE name=?", (habit_name,))
+        cursor.execute("SELECT COUNT(*) FROM predefined_habits WHERE name=?", (habit_name,))
         result = cursor.fetchone()
-        if result:
-            return bool(result[0])
+        if result and result[0] > 0:
+            return True
         return False
 
     def close(self):

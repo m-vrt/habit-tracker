@@ -27,19 +27,6 @@ class HabitTracker:
             self.habits.append(habit)
             return True
 
-    def delete_habit(self, habit_name):
-        """
-        Delete an existing habit from the tracker.
-
-        :param habit_name: Name of the habit to delete
-        """
-        if self.habit_database.habit_exists(habit_name):
-            self.habit_database.delete_habit(habit_name)
-            self.habits = self.habit_database.get_habits()
-            return True
-        else:
-            return False
-
     def get_habits(self):
         """
         Get the list of habits being tracked.

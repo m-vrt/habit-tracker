@@ -5,11 +5,10 @@ from database import HabitDatabase
 def initialize_database():
     """Initialize the database with predefined habits."""
     habit_database = HabitDatabase()
-    
-    try:       
-        habit_database.clear_all_predefined_habits()
+    predefined_habits = []
 
-        predefined_habits = []
+    try:
+        habit_database.clear_all_predefined_habits()
 
         predefined_daily_habits = [
             {"name": "Study", "description": "Study current module.", "periodicity": "Daily"},
@@ -37,9 +36,9 @@ def initialize_database():
 
         for habit in predefined_habits:
             habit_database.mark_habit_as_predefined(habit['name'])
-        
-            start_date = datetime.now() - timedelta(days=28 * 4)  
-            for _ in range(28 * 4):  
+
+            start_date = datetime.now() - timedelta(days=28 * 4)
+            for _ in range(28 * 4):
                 completion_date = start_date + timedelta(days=random.randint(0, 3))
                 status = random.choice(["not_started", "inconsistent", "consistently_followed"])
                 habit_database.add_tracking_data(habit['name'], completion_date, status)
