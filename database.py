@@ -54,8 +54,8 @@ class HabitDatabase:
     def add_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO habits (name, description, periodicity) VALUES (?, ?, ?)",
-                       (name, description, periodicity))
+        cursor.execute("INSERT INTO habits (name, description, periodicity, counter) VALUES (?, ?, ?, 0)",
+                   (name, description, periodicity))
         self.connection.commit()
         
     def add_predefined_habit(self, name: str, description: str, periodicity: str) -> None:
@@ -113,27 +113,41 @@ class HabitDatabase:
         """Check the status of a habit."""
         cursor = self.connection.cursor()
         cursor.execute("SELECT completion_date FROM habits WHERE name=? AND completion_date IS NOT NULL", (name,))
-        completion_dates = [datetime.strptime(row[0], "%Y-%m-%d") for row in cursor.fetchall()]        
-    
+        completion_dates = [datetime.strptime(row[0], "%Y-%m-%d").date() for row in cursor.fetchall()]
+
         if not completion_dates:
             return "not_started"
 
-        last_week = datetime.now() - timedelta(days=7)
-        if any(date > last_week for date in completion_dates):
-            return "consistently_followed"
-        else:
-            return "inconsistent"
-    
-    def view_current_streak(self, habit_name: str) -> int:
-        """View the current streak for a habit."""
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT streak FROM habits WHERE name=?", (habit_name,))
-        streak = cursor.fetchone()
-        if streak:
-            return streak[0]
-        else:
-            return 0
+        completion_dates.sort(reverse=True)
+        today = datetime.now().date()
 
+        if "Daily" in name:
+            consecutive_days = 0
+            last_completion_date = completion_dates[0]
+            if today - last_completion_date > timedelta(days=1):
+                return f"missed to complete the habit for {consecutive_days} days in a row"
+            for date in completion_dates:
+                if date == today:
+                    consecutive_days += 1
+                    today -= timedelta(days=1)
+                else:
+                    break
+            return f"consistently_followed for {consecutive_days} days in a row"
+
+        elif "Weekly" in name:
+            consecutive_weeks = 0
+            last_completion_date = completion_dates[0]
+            if today - last_completion_date > timedelta(days=7):
+                return f"missed to complete the habit for {consecutive_weeks} weeks in a row"
+            last_week_start = today - timedelta(days=today.weekday())
+            for date in completion_dates:
+                if date >= last_week_start:
+                    consecutive_weeks += 1
+                    last_week_start -= timedelta(weeks=1)
+                else:
+                    break
+            return f"consistently_followed for {consecutive_weeks} weeks in a row"
+       
     def complete_habit(self, name: str) -> None:
         """Mark a habit as completed."""
         completion_date = datetime.now().strftime("%Y-%m-%d")

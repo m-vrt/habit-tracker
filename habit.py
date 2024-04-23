@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from collections import Counter
 
+
 class Habit:
     """Represents a habit."""
 
@@ -66,27 +67,3 @@ class Habit:
             period_start_time = current_time - timedelta(days=periodicity_days)
             return period_start_time <= last_completion_time < current_time
         return False
-
-    def is_task_completed_within_period(self, period):
-        """
-        Check if a task has been completed within the defined period.
-
-        :param period: The period to check within (in days)
-        :return: True if task is completed within the period, False otherwise
-        """
-        if not self.completed_tasks:
-            return False
-        
-        last_completion_time = self.completed_tasks[-1]
-        current_time = datetime.now()
-        return (current_time - last_completion_time).days <= period
-
-    def update_streak_within_period(self, period):
-        """
-        Update streak within the specified period.
-
-        This method checks if the habit has been completed within the specified period,
-        and resets the streak if the period has elapsed.
-        """
-        if not self.is_task_completed_within_period(period):
-            self.streak = 0

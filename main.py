@@ -1,8 +1,9 @@
 from datetime import datetime
+import analytics
 from database import HabitDatabase
 from habit import Habit
 from initialize_database import initialize_database
-from analytics import *
+from analytics import view_longest_streak_menu
 
 
 def main(habit_database):
@@ -10,6 +11,7 @@ def main(habit_database):
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
 
     predefined_habits = initialize_database()
+    analytics.calculate_streaks(habit_database)  
 
     while True:
         print_menu()
@@ -178,9 +180,8 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
     print(f"\n[Habit: {habit_name}]")
     print("1. Mark habit as Done")
     print("2. Check habit status")
-    print("3. View current streak")
-    print("4. Delete habit")
-
+    print("3. Delete habit")
+    
     while True:
         choice = input("\nPlease enter the number of your choice: ").strip()
 
@@ -191,9 +192,6 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
             check_habit_status(habit_database, habit_name)
             break
         elif choice == "3":
-            view_current_streak(habit_database, habit_name)
-            break
-        elif choice == "4":
             if is_predefined:
                 if delete_predefined_habit(habit_database, habit_name):
                     print(f"~ Habit ('{habit_name}') successfully deleted!\n")
@@ -233,35 +231,56 @@ def mark_habit_as_done(habit_database, habit_name):
     if habit_database.check_habit_done_today(habit_name, today_date):
         print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today.\n")
     elif habit_database.is_predefined_habit(habit_name):
-        print(f"~ Sorry, but predefined habits like the habit ('{habit_name}') cannot be marked as Done.\n")
+        print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n")
     else:
         habit_database.complete_habit(habit_name)
         print(f"~ Hurray! Habit ('{habit_name}') marked as Done for today.\n")
 
-
 def check_habit_status(habit_database, habit_name):
     """Check the status of a habit."""
     if habit_name == "Predefined Habits":
-        view_predefined_habits_status(habit_database)
+        check_predefined_habit_status(habit_database)
         return
 
     status = habit_database.check_habit_status(habit_name)
 
     if status == "not_started":
-        print(f"~ Habit ('{habit_name}') has not been started yet.\n")
+        print(f"~ Habit '{habit_name}' has not been started yet.\n")
     elif status == "inconsistent":
-        print(f"~ You're finding it challenging to stick to the habit ('{habit_name}'). Aim for better consistency.\n")
-    elif status == "consistently_followed":
-        print(f"~ You are consistent with the habit ('{habit_name}'). Keep it up!\n")
+        print(f"~ You missed to complete the habit '{habit_name}' for {status} in a row. Aim for better consistency.\n")
+    elif status.startswith("consistently_followed"):
+        count = status.split("_")[1] 
+        period = "days" if "daily" in status else "weeks"
+        print(f"~ You have been consistent with the habit '{habit_name}' for [{count} {period}] in a row. Keep it up!\n")
+
+def check_predefined_habit_status(habit_database):
+    """Check the status of predefined habits."""
+    predefined_habits = habit_database.get_predefined_habits()
+    for habit_name in predefined_habits:
+        print(f"Habit: {habit_name}")
+        completion_date, completion_rate = habit_database.get_predefined_habit_status(habit_name)
+        if completion_date:
+            print(f"The habit was last completed on: {completion_date}")
+            print(f"Predefined {'Daily' if 'Daily' in habit_name else 'Weekly'} Habit '{habit_name}' has a completion rate of {completion_rate} out of total {'days' if 'Daily' in habit_name else 'weeks'}.")
+        
+def get_predefined_habit_status(self, habit_name):
+    """Get the last completion date and completion rate of a predefined habit."""
+    cursor = self.connection.cursor()
+    cursor.execute("SELECT COUNT(DISTINCT completion_date) FROM completions WHERE habit_name=?", (habit_name,))
+    completion_count = cursor.fetchone()[0]
+    if completion_count:
+        cursor.execute("SELECT MAX(completion_date) FROM completions WHERE habit_name=?", (habit_name,))
+        last_completion_date = cursor.fetchone()[0]
+        if "Daily" in habit_name:
+            total_days = (datetime.now() - datetime.strptime(last_completion_date, "%Y-%m-%d")).days + 1
+        elif "Weekly" in habit_name:
+            total_days = (datetime.now() - datetime.strptime(last_completion_date, "%Y-%m-%d")).days // 7 + 1
+        else:
+            total_days = 0
+        completion_rate = f"{completion_count} / {total_days}"
+        return last_completion_date, completion_rate
     else:
-        print("Error: Unexpected return value from habit_database.check_habit_status")
-
-
-def view_current_streak(habit_database, habit_name):
-    """View the current streak of a habit."""
-    streak = habit_database.get_streak_for_habit(habit_name)
-    print(f"Current streak for habit ('{habit_name}') is {streak}.\n")
-
+        return None, "0 / 0"
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
@@ -271,7 +290,6 @@ def clear_all_habits(habit_database):
         print("~ All habits cleared.\n")
     except Exception as e:
         print(f"An error occurred: {e}")
-
 
 def view_habit_hall_of_fame_menu(habit_database):
     """Menu for viewing the Habit Hall of Fame."""
@@ -296,16 +314,6 @@ def view_habit_hall_of_fame_menu(habit_database):
             print("~ Invalid choice. Please enter a number from 1 to 3.")
 
 
-def view_longest_streak_menu(habit_database, periodicity=None):
-    """View the longest streak."""
-    if periodicity == "All":
-        longest_streak_habit, longest_streak = get_longest_streak(habit_database)
-        streak_count = habit_database.get_streak_for_habit(longest_streak_habit)
-        print(f"Habit ('{longest_streak_habit}') has the longest streak out of all the habits! (Streak count: {streak_count})\n")
-    else:
-        longest_streak_habit, longest_streak = get_longest_streak(habit_database, periodicity)
-        streak_count = habit_database.get_streak_for_habit(longest_streak_habit)
-        print(f"Habit ('{longest_streak_habit}') has the longest streak among {periodicity.lower()} habits! (Streak count: {streak_count})\n")
 
 
 if __name__ == "__main__":

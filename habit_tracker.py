@@ -35,29 +35,7 @@ class HabitTracker:
         """
         return self.habits
 
-    def check_habit_status(self, habit_name):
-        """
-        Check the status of a habit.
-
-        :param habit_name: Name of the habit to check
-        :return: Status of the habit
-        """
-        if self.habit_database.habit_exists(habit_name):
-            return "Habit exists"
-        else:
-            return "No habits tracked"
-
     def get_streaks(self):
         """View streaks for habits."""
         streaks = self.habit_database.get_streaks()
         return streaks
-
-    def update_database(self):
-        """Update the database with current habit data."""       
-        for habit in self.habits:
-            streak = self.habit_database.get_streak_for_habit(habit.name)
-            self.habit_database.update_streak(habit.name, streak)
-
-    def close_database(self):
-        """Close the connection to the database."""
-        self.habit_database.close()
