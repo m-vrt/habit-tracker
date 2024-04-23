@@ -196,10 +196,12 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
         elif choice == "4":
             if is_predefined:
                 if delete_predefined_habit(habit_database, habit_name):
-                    return True                
+                    print(f"~ Habit ('{habit_name}') successfully deleted!\n")
+                return True               
             else:
                 if delete_habit(habit_database, habit_name):
-                    return True                
+                    print(f"~ Habit ('{habit_name}') successfully deleted!\n")
+                return True
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
@@ -208,18 +210,21 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
 def delete_predefined_habit(habit_database, habit_name):
     """Delete a predefined habit."""
     try:
-        habit_database.delete_predefined_habit(habit_name) 
-        print(f"~ Habit ('{habit_name}') successfully deleted!\n")
+        habit_database.delete_predefined_habit(habit_name)   
     except ValueError as e:
         print(e)
 
 def delete_habit(habit_database, habit_name):
     """Delete a habit."""
     try:
-        habit_database.delete_habit(habit_name)
-        print(f"~ Habit ('{habit_name}') successfully deleted!\n")           
+        if habit_database.is_predefined_habit(habit_name):            
+            habit_database.delete_predefined_habit(habit_name)
+        else:          
+            habit_database.delete_habit(habit_name)           
+        return True
     except ValueError as e:
         print(e)
+        return False
        
 def mark_habit_as_done(habit_database, habit_name):
     """Marks a habit as Done."""

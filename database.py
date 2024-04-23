@@ -82,6 +82,7 @@ class HabitDatabase:
         try:
             cursor.execute("DELETE FROM predefined_habits WHERE name=?", (name,))
             if cursor.rowcount == 0:
+                print("DEBUG: No predefined habit found with the given name:", name)  
                 raise ValueError("No predefined habit found with the given name")
             self.connection.commit()
         except sqlite3.IntegrityError as e:
