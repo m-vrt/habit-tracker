@@ -260,20 +260,12 @@ def view_current_streak(habit_database, habit_name):
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
-    user_defined_habits = habit_database.get_habits()
-    predefined_habits = habit_database.get_predefined_habits()
-
-    if not user_defined_habits and not predefined_habits:
-        print("~ No habits to clear.\n")
-        return
-
-    for habit in user_defined_habits:
-        habit_database.delete_habit(habit['name'])
-
-    for habit in predefined_habits:
-        habit_database.delete_habit(habit['name'])
-
-    print("~ All habits cleared.\n")
+    try:       
+        habit_database.clear_all_habits()    
+        habit_database.clear_all_predefined_habits()
+        print("~ All habits cleared.\n")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def view_habit_hall_of_fame_menu(habit_database):

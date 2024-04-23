@@ -202,7 +202,7 @@ class HabitDatabase:
         return count > 0
 
     def clear_all_habits(self):
-        """Clear all habits from the database."""
+        """Clear all user-defined habits from the database."""
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM habits")
         cursor.execute("DELETE FROM completions")
