@@ -54,33 +54,29 @@ def calculate_streaks(habit_database: HabitDatabase) -> None:
                 streak = calculate_daily_streak(habit_database, habit['name'])
             elif habit['periodicity'] == 'Weekly':
                 streak = calculate_weekly_streak(habit_database, habit['name'])
-        else:
-            streak = 0 
-    else:
-        streak = 0  
-
-    habit_database.update_streak(habit['name'], streak)
+            habit_database.update_streak(habit['name'], streak)
 
 def calculate_daily_streak(habit_database: HabitDatabase, habit_name: str) -> int:
     """Calculate daily streak for a habit."""
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
 
+    streak = 0
     if habit_database.check_habit_done_today(habit_name, str(today)):
-        return habit_database.get_streak_for_habit(habit_name) + 1
+        streak = habit_database.get_streak_for_habit(habit_name) + 1
     elif habit_database.check_habit_done_today(habit_name, str(yesterday)):
-        return habit_database.get_streak_for_habit(habit_name)
-    else:
-        return 0
+        streak = habit_database.get_streak_for_habit(habit_name)
+    return streak
 
 def calculate_weekly_streak(habit_database: HabitDatabase, habit_name: str) -> int:
     """Calculate weekly streak for a habit."""
-    today = datetime.now().date()
-    last_week_start = today - timedelta(days=today.weekday())  
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    start_of_current_week = datetime.strptime(today_date, "%Y-%m-%d") - timedelta(days=datetime.now().weekday())
+    last_week_start = start_of_current_week - timedelta(weeks=1)
 
     streak = 0
     while habit_database.check_habit_done_today(habit_name, str(last_week_start)):
         streak += 1
-        last_week_start -= timedelta(weeks=1) 
-
+        last_week_start -= timedelta(weeks=1)
     return streak
+

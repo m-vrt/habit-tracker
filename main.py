@@ -227,14 +227,27 @@ def delete_habit(habit_database, habit_name):
 def mark_habit_as_done(habit_database, habit_name):
     """Marks a habit as Done."""
     today_date = datetime.now().strftime("%Y-%m-%d")
-    
+
     if habit_database.check_habit_done_today(habit_name, today_date):
-        print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today.\n")
+        if "Weekly" in habit_name:
+            print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done this week. Please check back next week.\n")
+        else:
+            print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today. Please check back tomorrow.\n")
     elif habit_database.is_predefined_habit(habit_name):
         print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n")
-    else:
-        habit_database.complete_habit(habit_name)
-        print(f"~ Hurray! Habit ('{habit_name}') marked as Done for today.\n")
+    else:        
+        habit = habit_database.get_habit_by_name(habit_name)
+        if habit:
+            description = habit.description
+            periodicity = habit.periodicity
+            habit_database.complete_habit(habit_name)
+            print(f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n")
+        else:
+            print(f"~ Habit '{habit_name}' not found in the database.\n")
+            return
+
+        habit_database.increment_counter(habit_name)
+        habit_database.update_streak(habit_name, today_date)
 
 def check_habit_status(habit_database, habit_name):
     """Check the status of a habit."""

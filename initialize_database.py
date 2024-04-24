@@ -40,14 +40,21 @@ def initialize_database():
             start_date = datetime.now() - timedelta(days=28 * 4)
             for _ in range(28 * 4):
                 completion_date = start_date + timedelta(days=random.randint(0, 3))
-                status = random.choice(["not_started", "inconsistent", "consistently_followed"])
-                habit_database.add_tracking_data(habit['name'], completion_date, status)
-
+                created_date = completion_date - timedelta(days=random.randint(0, 3))  
+                status = random.choice(["not_started", "inconsistent", "consistently_followed"])               
+                habit_database.add_tracking_data(
+                    habit['name'], 
+                    habit['description'], 
+                    habit['periodicity'], 
+                    created_date, 
+                    completion_date, 
+                    status
+                )
+  
     finally:
         habit_database.close()
 
     return predefined_habits
-
 
 if __name__ == "__main__":
     initialize_database()

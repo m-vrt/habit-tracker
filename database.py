@@ -26,17 +26,22 @@ class HabitDatabase:
                 completion_date TEXT,
                 completion_time TEXT,
                 streak INTEGER DEFAULT 0,
-                counter INTEGER DEFAULT 0)""")            
+                counter INTEGER DEFAULT 0,
+                is_predefined INTEGER DEFAULT 0)""")           
         except sqlite3.Error as e:
             print("Error occurred while creating the habits table:", e)
 
         try:
             cursor.execute("""CREATE TABLE IF NOT EXISTS completions (
                 id INTEGER PRIMARY KEY,
-                habit_name TEXT,
+                name TEXT,
+                description TEXT,
+                periodicity TEXT,
+                created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 completion_date TEXT,
-                completion_time TEXT,          
-                FOREIGN KEY (habit_name) REFERENCES habits (name))""")         
+                completion_time TEXT,
+                streak INTEGER DEFAULT 0,
+                counter INTEGER DEFAULT 0)""")         
         except sqlite3.Error as e:
             print("Error occurred while creating the completions table:", e)
 
@@ -148,24 +153,23 @@ class HabitDatabase:
                     break
             return f"consistently_followed for {consecutive_weeks} weeks in a row"
        
-    def complete_habit(self, name: str) -> None:
+    def complete_habit(self, name: str, description: str, periodicity: str) -> None:
         """Mark a habit as completed."""
         completion_date = datetime.now().strftime("%Y-%m-%d")
-        completion_time = datetime.now().strftime("%H:%M:%S")  
-        
+        completion_time = datetime.now().strftime("%H:%M:%S")
+        created_date = datetime.now().strftime("%Y-%m-%d")  
+
         if self.check_habit_done_today(name, completion_date):
             return 
 
         cursor = self.connection.cursor()
 
         try:
-        
-            cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=?", 
-                       (completion_date, completion_time, name))
+            cursor.execute("UPDATE habits SET completion_time=? WHERE name=?",  
+               (completion_time, name))
 
-        
-            cursor.execute("INSERT INTO completions (habit_name, completion_date, completion_time) VALUES (?, ?, ?)",
-                       (name, completion_date, completion_time))
+            cursor.execute("INSERT INTO completions (name, description, periodicity, created_date, completion_date, completion_time) VALUES (?, ?, ?, ?, ?, ?)",  
+           (name, description, periodicity, created_date, completion_date, completion_time))
 
             self.connection.commit()
         except Exception as e:
@@ -194,20 +198,56 @@ class HabitDatabase:
         else:
             return None
     
-    def update_streak(self, name: str, streak: int) -> None:
-        """Update the streak for a specific habit."""
+    def update_streak(self, habit_name, today_date):
+        """Update the streak for the habit."""
         cursor = self.connection.cursor()
-        cursor.execute("UPDATE habits SET streak = ? WHERE name = ?", (streak, name))
+        cursor.execute("SELECT created_date, streak, periodicity FROM habits WHERE name=?", (habit_name,))
+        row = cursor.fetchone()
+        created_date, streak, periodicity = row[0], row[1], row[2]
+
+        created_datetime = datetime.strptime(created_date, "%Y-%m-%d")
+        today_datetime = datetime.strptime(today_date, "%Y-%m-%d")
+      
+        if periodicity == "Daily":           
+            if (today_datetime - timedelta(days=1)).strftime("%Y-%m-%d") != created_datetime.strftime("%Y-%m-%d"):            
+                streak = 0
+            else:              
+                streak += 1
+        elif periodicity == "Weekly":      
+            start_of_current_week = today_datetime - timedelta(days=today_datetime.weekday())
+            start_of_previous_week = start_of_current_week - timedelta(weeks=1)
+            end_of_previous_week = start_of_current_week - timedelta(days=1)
+
+            if created_datetime < start_of_previous_week:               
+                streak = 0
+            elif start_of_previous_week <= created_datetime <= end_of_previous_week:               
+                streak += 1
+            else:             
+                streak = 0
+       
+        cursor.execute("UPDATE habits SET streak = ? WHERE name=?", (streak, habit_name))
         self.connection.commit()
-        
-    def increment_counter(self, name: str, date: str = None) -> None:
-        """Increment the counter for a specific habit."""
+
+    def increment_counter(self, habit_name):
+        """Increment the counter for the habit."""
         cursor = self.connection.cursor()
-        if date:
-            cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name = ? AND completion_date = ?", (name, date))
-        else:
-            cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name = ?", (name,))
-        self.connection.commit()
+        if "Weekly" in habit_name:          
+            today_date = datetime.now().strftime("%Y-%m-%d")
+            start_of_current_week = datetime.strptime(today_date, "%Y-%m-%d") - timedelta(days=datetime.now().weekday())
+            end_of_current_week = start_of_current_week + timedelta(days=6)
+
+            cursor.execute("SELECT COUNT(*) FROM completions WHERE name=? AND completion_date BETWEEN ? AND ?",
+                       (habit_name, start_of_current_week.strftime("%Y-%m-%d"), end_of_current_week.strftime("%Y-%m-%d")))
+            count = cursor.fetchone()[0]
+
+            if count == 0:                
+                cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name=?", (habit_name,))
+                self.connection.commit()
+            else:                
+                print(f"~ Sorry, but you've already marked the habit as Done this week. Please check back next week.\n")
+        else:           
+            cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name=?", (habit_name,))
+            self.connection.commit()
 
     def check_habit_done_today(self, habit_name: str, date: str) -> bool:
         """Check if a habit has been marked as done on the given date."""
@@ -220,6 +260,7 @@ class HabitDatabase:
         """Clear all user-defined habits from the database."""
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM habits")
+        cursor.execute("DELETE FROM predefined_habits")  
         cursor.execute("DELETE FROM completions")
         self.connection.commit()
 
@@ -229,10 +270,11 @@ class HabitDatabase:
         cursor.execute("UPDATE habits SET is_predefined = 1 WHERE name = ?", (habit_name,))
         self.connection.commit()
 
-    def add_tracking_data(self, habit_name: str, completion_date: str, status: str) -> None:
+    def add_tracking_data(self, habit_name: str, description: str, periodicity: str, created_date: str, completion_date: str, status: str) -> None:
         """Add tracking data for a habit."""
         cursor = self.connection.cursor()
-        cursor.execute("INSERT INTO completions (habit_name, completion_date) VALUES (?, ?)", (habit_name, completion_date))
+        cursor.execute("INSERT INTO completions (name, description, periodicity, created_date, completion_date) VALUES (?, ?, ?, ?, ?)",  
+                   (habit_name, description, periodicity, created_date, completion_date))
         self.connection.commit()
 
     def get_predefined_habits(self) -> List[str]:
@@ -263,6 +305,54 @@ class HabitDatabase:
         if result and result[0] > 0:
             return True
         return False
+
+    def increment_counter(self, habit_name):
+        """Increment the counter for the habit."""
+        cursor = self.connection.cursor()
+        cursor.execute("UPDATE habits SET counter = counter + 1 WHERE name=?", (habit_name,))
+        self.connection.commit()
+
+    def update_streak(self, habit_name, today_date):
+        """Update the streak for the habit."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT created_date, streak, periodicity FROM habits WHERE name=?", (habit_name,))
+        row = cursor.fetchone()
+        created_date, streak, periodicity = row[0], row[1], row[2]
+        
+        created_datetime = datetime.strptime(created_date, "%Y-%m-%d")
+        today_datetime = datetime.strptime(today_date, "%Y-%m-%d")
+       
+        if periodicity == "Daily":            
+            if (today_datetime - timedelta(days=1)).strftime("%Y-%m-%d") != created_datetime.strftime("%Y-%m-%d"):              
+                streak = 0
+            else:            
+                streak += 1
+        elif periodicity == "Weekly":          
+            if (today_datetime - timedelta(weeks=1)).strftime("%Y-%m-%d") > created_datetime.strftime("%Y-%m-%d"):             
+                streak = 0
+            else:            
+                streak += 1
+       
+        cursor.execute("UPDATE habits SET streak = ? WHERE name=?", (streak, habit_name))
+        self.connection.commit()
+
+    def update_habit_statistics(habit_database, habit_name):
+        """Updates habit statistics such as counter and streak."""        
+        today_date = datetime.now().strftime("%Y-%m-%d")
+       
+        if habit_database.check_habit_done_today(habit_name, today_date):
+            print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today.\n")
+            return
+       
+        if habit_database.is_predefined_habit(habit_name):
+            print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n")
+            return
+      
+        habit_database.complete_habit(habit_name)
+        print(f"~ Hurray! Habit ('{habit_name}') marked as Done for today.\n")
+       
+        habit_database.increment_counter(habit_name)      
+        habit_database.update_streak(habit_name, today_date)
 
     def close(self):
         """Close the database connection."""
