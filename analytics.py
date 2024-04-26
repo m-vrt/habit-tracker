@@ -79,4 +79,3 @@ def calculate_weekly_streak(habit_database: HabitDatabase, habit_name: str) -> i
         streak += 1
         last_week_start -= timedelta(weeks=1)
     return streak
-

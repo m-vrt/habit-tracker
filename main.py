@@ -10,8 +10,10 @@ def main(habit_database):
     """Main function to initialize and run the Habit Tracker."""
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
 
-    predefined_habits = initialize_database()
+    predefined_daily_habits, predefined_weekly_habits = initialize_database(habit_database)
     analytics.calculate_streaks(habit_database)  
+
+    predefined_habits = predefined_daily_habits + predefined_weekly_habits
 
     while True:
         print_menu()
@@ -97,8 +99,8 @@ def view_habits_menu(habit_database, predefined_habits):
     daily_habits = habit_database.get_habits_by_periodicity("Daily")
     weekly_habits = habit_database.get_habits_by_periodicity("Weekly")
 
-    predefined_daily_habits = habit_database.get_predefined_habits_by_periodicity("Daily")
-    predefined_weekly_habits = habit_database.get_predefined_habits_by_periodicity("Weekly")
+    predefined_daily_habits = habit_database.get_predefined_habits_by_periodicity_from_predefined_habits_table("Daily")
+    predefined_weekly_habits = habit_database.get_predefined_habits_by_periodicity_from_predefined_habits_table("Weekly")
 
     total_habits = len(daily_habits) + len(weekly_habits) + len(predefined_daily_habits) + len(predefined_weekly_habits)
     current_index = 1
