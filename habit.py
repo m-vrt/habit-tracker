@@ -5,7 +5,7 @@ from collections import Counter
 class Habit:
     """Represents a habit."""
 
-    def __init__(self, name, description, periodicity, created_date=None):
+    def __init__(self, name, description, periodicity, created_date=None, completion_date=None, completion_time=None, streak=None, counter=None):
         """
         Initialize a habit.
 
@@ -13,6 +13,10 @@ class Habit:
         :param description: Description of the task
         :param periodicity: Periodicity of the habit (daily or weekly)
         :param created_date: Date when the habit was created (default is None)
+        :param completion_date: Date when the habit was completed (default is None)
+        :param completion_time: Time when the habit was completed (default is None)
+        :param streak: Streak of the habit (default is None)
+        :param counter: Counter of the habit (default is None)
         """
         self.name = name
         self.description = description
@@ -20,8 +24,8 @@ class Habit:
         self.created_date = created_date or datetime.now().date()
         self.completed_tasks = []
         self.streak_counter = Counter()
-        self.streak = 0
-        self.last_completion_date = None  
+        self.streak = streak or 0
+        self.last_completion_date = None 
 
     def complete_task(self):
         """
@@ -41,7 +45,8 @@ class Habit:
         This method updates the streak based on consecutive completions of tasks within
         the defined period for the habit.
         """
-        if self.check_if_streak_continues_within_period(completion_time):
+        last_completion_time = self.last_completion_date
+        if last_completion_time and self.check_if_streak_continues_within_period(completion_time):
             self.streak += 1
         else:
             self.streak = 1
@@ -53,10 +58,10 @@ class Habit:
         This method checks if the current completion continues a streak by comparing
         the completion date with the date of the last completed task within the defined period.
         """
-        if len(self.completed_tasks) > 0:
-            last_completion_time = self.completed_tasks[-1]
+        last_completion_time = self.last_completion_date
+        if last_completion_time:
             current_time = completion_time
-                       
+
             if self.periodicity == 'Daily':
                 periodicity_days = 1
             elif self.periodicity == 'Weekly':
@@ -67,3 +72,4 @@ class Habit:
             period_start_time = current_time - timedelta(days=periodicity_days)
             return period_start_time <= last_completion_time < current_time
         return False
+

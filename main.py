@@ -11,8 +11,6 @@ def main(habit_database):
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
 
     predefined_daily_habits, predefined_weekly_habits = initialize_database(habit_database)
-    analytics.calculate_streaks(habit_database)  
-
     predefined_habits = predefined_daily_habits + predefined_weekly_habits
 
     while True:
@@ -228,74 +226,34 @@ def delete_habit(habit_database, habit_name):
        
 def mark_habit_as_done(habit_database, habit_name):
     """Marks a habit as Done."""
-    today_date = datetime.now().strftime("%Y-%m-%d")
+    completion_date = datetime.now().strftime("%#m/%#d/%Y")
 
-    if habit_database.check_habit_done_today(habit_name, today_date):
-        if "Weekly" in habit_name:
+    if habit_database.check_habit_done(habit_name, completion_date):
+        if habit_database.get_periodicity_by_name(habit_name) == "Weekly":
             print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done this week. Please check back next week.\n")
         else:
             print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today. Please check back tomorrow.\n")
     elif habit_database.is_predefined_habit(habit_name):
         print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n")
-    else:        
+    else:
         habit = habit_database.get_habit_by_name(habit_name)
         if habit:
             description = habit.description
             periodicity = habit.periodicity
-            habit_database.complete_habit(habit_name)
-            print(f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n")
-        else:
-            print(f"~ Habit '{habit_name}' not found in the database.\n")
-            return
-
-        habit_database.increment_counter(habit_name)
-        habit_database.update_streak(habit_name, today_date)
-
+            if habit_database.complete_habit(habit_name, habit.description, habit.periodicity):
+                if periodicity == "Weekly":
+                    print(f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n")
+                else:
+                    print(f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n")
+        
 def check_habit_status(habit_database, habit_name):
-    """Check the status of a habit."""
-    if habit_name == "Predefined Habits":
-        check_predefined_habit_status(habit_database)
-        return
-
-    status = habit_database.check_habit_status(habit_name)
-
-    if status == "not_started":
-        print(f"~ Habit '{habit_name}' has not been started yet.\n")
-    elif status == "inconsistent":
-        print(f"~ You missed to complete the habit '{habit_name}' for {status} in a row. Aim for better consistency.\n")
-    elif status.startswith("consistently_followed"):
-        count = status.split("_")[1] 
-        period = "days" if "daily" in status else "weeks"
-        print(f"~ You have been consistent with the habit '{habit_name}' for [{count} {period}] in a row. Keep it up!\n")
+    pass
 
 def check_predefined_habit_status(habit_database):
-    """Check the status of predefined habits."""
-    predefined_habits = habit_database.get_predefined_habits()
-    for habit_name in predefined_habits:
-        print(f"Habit: {habit_name}")
-        completion_date, completion_rate = habit_database.get_predefined_habit_status(habit_name)
-        if completion_date:
-            print(f"The habit was last completed on: {completion_date}")
-            print(f"Predefined {'Daily' if 'Daily' in habit_name else 'Weekly'} Habit '{habit_name}' has a completion rate of {completion_rate} out of total {'days' if 'Daily' in habit_name else 'weeks'}.")
-        
+    pass
+     
 def get_predefined_habit_status(self, habit_name):
-    """Get the last completion date and completion rate of a predefined habit."""
-    cursor = self.connection.cursor()
-    cursor.execute("SELECT COUNT(DISTINCT completion_date) FROM completions WHERE habit_name=?", (habit_name,))
-    completion_count = cursor.fetchone()[0]
-    if completion_count:
-        cursor.execute("SELECT MAX(completion_date) FROM completions WHERE habit_name=?", (habit_name,))
-        last_completion_date = cursor.fetchone()[0]
-        if "Daily" in habit_name:
-            total_days = (datetime.now() - datetime.strptime(last_completion_date, "%Y-%m-%d")).days + 1
-        elif "Weekly" in habit_name:
-            total_days = (datetime.now() - datetime.strptime(last_completion_date, "%Y-%m-%d")).days // 7 + 1
-        else:
-            total_days = 0
-        completion_rate = f"{completion_count} / {total_days}"
-        return last_completion_date, completion_rate
-    else:
-        return None, "0 / 0"
+    pass
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
