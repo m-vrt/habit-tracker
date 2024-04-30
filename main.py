@@ -6,6 +6,7 @@ from initialize_database import initialize_database
 from analytics import view_longest_streak_menu
 
 
+
 def main(habit_database):
     """Main function to initialize and run the Habit Tracker."""
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
@@ -186,7 +187,7 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
         choice = input("\nPlease enter the number of your choice: ").strip()
 
         if choice == "1":
-            mark_habit_as_done(habit_database, habit_name)
+            mark_habit_as_done(habit_database, habit_name, periodicity)
             break
         elif choice == "2":
             check_habit_status(habit_database, habit_name)
@@ -224,27 +225,29 @@ def delete_habit(habit_database, habit_name):
         print(e)
         return False
        
-def mark_habit_as_done(habit_database, habit_name):
+def mark_habit_as_done(habit_database, habit_name, periodicity):
     """Marks a habit as Done."""
     completion_date = datetime.now().strftime("%#m/%#d/%Y")
 
-    if habit_database.check_habit_done(habit_name, completion_date):
-        if habit_database.get_periodicity_by_name(habit_name) == "Weekly":
-            print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done this week. Please check back next week.\n")
+    if habit_database.check_habit_done(habit_name, completion_date, periodicity):
+        if periodicity == "Weekly":
+            message = f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done this week. Please check back next week.\n"
         else:
-            print(f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today. Please check back tomorrow.\n")
+            message = f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today. Please check back tomorrow.\n"
+        print(message)
     elif habit_database.is_predefined_habit(habit_name):
-        print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n")
+        message = f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n"
+        print(message)
     else:
         habit = habit_database.get_habit_by_name(habit_name)
         if habit:
             description = habit.description
-            periodicity = habit.periodicity
-            if habit_database.complete_habit(habit_name, habit.description, habit.periodicity):
+            if habit_database.complete_habit(habit_name, description, periodicity):
                 if periodicity == "Weekly":
-                    print(f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n")
+                    message = f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n"
                 else:
-                    print(f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n")
+                    message = f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n"
+                print(message)
         
 def check_habit_status(habit_database, habit_name):
     pass

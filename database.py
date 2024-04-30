@@ -1,6 +1,6 @@
+from datetime import date, datetime, timedelta
+from typing import Dict, List
 import sqlite3
-from datetime import datetime, timedelta
-from typing import List, Dict
 from habit import Habit
 
 
@@ -140,14 +140,14 @@ class HabitDatabase:
         completion_time = datetime.now().strftime("%H:%M:%S")
         created_date = datetime.now().strftime("%#m/%#d/%Y %H:%M")
 
-        if self.check_habit_done(name, completion_date):
+        if self.check_habit_done(name, completion_date, periodicity):
             return False
 
         cursor = self.connection.cursor()
 
         try:
             cursor.execute("UPDATE habits SET completion_time=?, created_date=?, completion_date=? WHERE name=?",  
-               (completion_time, created_date, completion_date, name))
+           (completion_time, created_date, completion_date, name))
 
             self.connection.commit()
             return True  
@@ -166,38 +166,32 @@ class HabitDatabase:
         else:
             return None
     
-    def check_habit_done(self, habit_name: str, date: str) -> bool:
-        """Check if a habit has been marked as done on the given date."""
+    def check_habit_done(self, habit_name: str, completion_date: str, periodicity: str) -> bool:
+        """Check if a habit has been marked as done within the specified period."""
         cursor = self.connection.cursor()
-      
-        query_date = datetime.strptime(date, "%m/%d/%Y")
+        query_date = datetime.strptime(completion_date, "%m/%d/%Y")
         formatted_date = query_date.strftime("%#m/%#d/%Y")
-       
-        if habit_name == "daily":
-            start_of_day = query_date.replace(hour=0, minute=0, second=0)
-            end_of_day = query_date.replace(hour=23, minute=59, second=59)
-            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?", 
-                   (habit_name, start_of_day.strftime("%#m/%#d/%Y"), end_of_day.strftime("%#m/%#d/%Y")))
-    
-            count_row = cursor.fetchone()
-            if count_row:
-                count = count_row[0]
-                return count > 0
-            else:
-                return False
-        
-        elif habit_name == "weekly":
+
+        if periodicity == "daily":            
+            start_of_day = completion_date + " 00:00:00"
+            end_of_day = completion_date + " 23:59:59"
+            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?",
+                       (habit_name, start_of_day, end_of_day))
+        elif periodicity == "weekly":           
+            query_date = datetime.strptime(completion_date, "%#m/%#d/%Y")
             start_of_week = query_date - timedelta(days=query_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
-            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?", 
-                       (habit_name, start_of_week.strftime("%#m/%#d/%Y"), end_of_week.strftime("%#m/%#d/%Y")))
+            start_of_week_str = start_of_week.strftime("%#m/%#d/%Y") + " 00:00:00"
+            end_of_week_str = end_of_week.strftime("%#m/%#d/%Y") + " 23:59:59"
+            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?",
+                       (habit_name, start_of_week_str, end_of_week_str))
 
-            count_row = cursor.fetchone()
-            if count_row:
-                count = count_row[0]
-                return count > 0
-            else:
-                return False
+        count_row = cursor.fetchone()
+        if count_row:
+            count = count_row[0]
+            return count > 0  
+        else:
+            return False
 
     def clear_all_habits(self):
         """Clear all user-defined habits from the database."""
@@ -262,6 +256,8 @@ class HabitDatabase:
                           SELECT id, name, description, periodicity, created_date, completion_date, completion_time
                           FROM predefined_data""")
         self.connection.commit()
+
+    
     
     def close(self):
         """Close the database connection."""
