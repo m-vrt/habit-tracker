@@ -121,7 +121,7 @@ class HabitDatabase:
     def get_habits_by_periodicity(self, periodicity):
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT DISTINCT name, description, MIN(created_date) FROM habits WHERE periodicity=? GROUP BY name, periodicity", (periodicity,))
+        cursor.execute("SELECT DISTINCT name, description, MIN(created_date) FROM habits WHERE periodicity=? GROUP BY name, periodicity ORDER BY MIN(created_date)", (periodicity,))
     
         habits = {}
         for row in cursor.fetchall():
