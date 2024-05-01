@@ -33,8 +33,8 @@ def main(habit_database):
 def print_menu():
     """Print the menu options."""
     print("\nWhat would you like to do?\n")
-    print("1. Add habit")
-    print("2. Manage habits")
+    print("1. Add Habit")
+    print("2. Manage Habits")
     print("3. View Habit Hall of Fame")
     print("4. Quit")
 
@@ -72,8 +72,8 @@ def manage_habits_menu(habit_database, predefined_habits):
     """Menu for managing habits."""
     while True:
         print("\nMANAGE HABITS")
-        print("1. View list of habits")
-        print("2. Clear all habits")
+        print("1. View List of Habits")
+        print("2. Clear All Habits")
         print("3. Return to Main Menu")
 
         choice = input("\nPlease enter the number of your choice: ").strip()
@@ -177,9 +177,10 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
         is_predefined = False
 
     print(f"\n[Habit: {habit_name}]")
-    print("1. Mark habit as Done")
-    print("2. Check habit status")
-    print("3. Delete habit")
+    print("1. Mark Habit as Done")
+    print("2. Check Habit Status")
+    print("3. Delete Habit")
+    print("4. Return to Previous Menu")
     
     while True:
         choice = input("\nPlease enter the number of your choice: ").strip()
@@ -199,6 +200,8 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
                 if delete_habit(habit_database, habit_name):
                     print(f"~ Habit ('{habit_name}') successfully deleted!\n")
                 return True
+        elif choice == "4":
+            return False  
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
@@ -267,7 +270,8 @@ def view_habit_hall_of_fame_menu(habit_database):
     print("\nVIEW HABIT HALL OF FAME")
     print("1. Daily")
     print("2. Weekly")
-    print("3. All habits")
+    print("3. All Habits")
+    print("4. Return to Main Menu")
 
     while True:
         choice = input("\nPlease enter the number of your choice: ").strip()
@@ -281,8 +285,10 @@ def view_habit_hall_of_fame_menu(habit_database):
         elif choice == "3":
             view_longest_streak_menu(habit_database, periodicity="All")
             break
+        elif choice == "4":
+            return  
         else:
-            print("~ Invalid choice. Please enter a number from 1 to 3.")
+            print("~ Invalid choice. Please enter a number from 1 to 4.")
 
 
 
