@@ -1,7 +1,6 @@
 from datetime import datetime
 import analytics
 from database import HabitDatabase
-from habit import Habit
 from initialize_database import initialize_database
 from analytics import view_longest_streak_menu
 
@@ -30,7 +29,6 @@ def main(habit_database):
             break
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
-
 
 def print_menu():
     """Print the menu options."""
@@ -239,15 +237,12 @@ def mark_habit_as_done(habit_database, habit_name, periodicity):
         message = f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n"
         print(message)
     else:
-        habit = habit_database.get_habit_by_name(habit_name)
-        if habit:
-            description = habit.description
-            if habit_database.complete_habit(habit_name, description, periodicity):
-                if periodicity == "Weekly":
-                    message = f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n"
-                else:
-                    message = f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n"
-                print(message)
+        if habit_database.complete_habit(habit_name, None, periodicity): 
+            if periodicity == "Weekly":
+                message = f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n"
+            else:
+                message = f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n"
+            print(message)
         
 def check_habit_status(habit_database, habit_name):
     pass

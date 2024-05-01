@@ -1,7 +1,6 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Dict, List
 import sqlite3
-from habit import Habit
 
 
 class HabitDatabase:
@@ -119,77 +118,77 @@ class HabitDatabase:
         cursor.execute("SELECT name, description FROM habits")
         return [{'name': row[0], 'description': row[1]} for row in cursor.fetchall()]
 
-    def get_habits_by_periodicity(self, periodicity=None):
+    def get_habits_by_periodicity(self, periodicity):
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
-        if periodicity:
-            cursor.execute("SELECT name, description FROM habits WHERE periodicity=?", (periodicity,))
-        else:
-            cursor.execute("SELECT name, description FROM habits")
-        return [{'name': row[0], 'description': row[1]} for row in cursor.fetchall()]
-
-    def habit_exists(self, name: str) -> bool:
-        """Check if a habit exists in the database."""
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT 1 FROM habits WHERE name=?", (name,))
-        return cursor.fetchone() is not None   
+        cursor.execute("SELECT DISTINCT name, description, MIN(created_date) FROM habits WHERE periodicity=? GROUP BY name, periodicity", (periodicity,))
+    
+        habits = {}
+        for row in cursor.fetchall():
+            name = row[0]
+            description = row[1]
+            created_date = row[2]
+            habit_key = (name, periodicity, created_date)
+            if habit_key not in habits:
+                habits[habit_key] = {'description': description}
+    
+        return [{'name': key[0], 'description': habit['description']} for key, habit in habits.items()]
        
     def complete_habit(self, name: str, description: str, periodicity: str) -> bool:
         """Mark a habit as completed."""
         completion_date = datetime.now().strftime("%#m/%#d/%Y")
         completion_time = datetime.now().strftime("%H:%M:%S")
-        created_date = datetime.now().strftime("%#m/%#d/%Y %H:%M")
-
-        if self.check_habit_done(name, completion_date, periodicity):
-            return False
 
         cursor = self.connection.cursor()
 
-        try:
-            cursor.execute("UPDATE habits SET completion_time=?, created_date=?, completion_date=? WHERE name=?",  
-           (completion_time, created_date, completion_date, name))
+        try:            
+            existing_completion_query = "SELECT COUNT(*) FROM habits WHERE name=? AND completion_date IS NOT NULL AND periodicity=?"
+            cursor.execute(existing_completion_query, (name, periodicity))
+            existing_completion_count = cursor.fetchone()[0]
 
-            self.connection.commit()
-            return True  
+            if existing_completion_count == 0:               
+                cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=? AND completion_date IS NULL AND periodicity=?",
+                           (completion_date, completion_time, name, periodicity))
+                self.connection.commit()
+            else:                
+                cursor.execute("SELECT created_date FROM habits WHERE name=? LIMIT 1", (name,))
+                row = cursor.fetchone()
+                if row:
+                    created_date = row[0]
+                else:
+                    raise ValueError("No habit found with the given name")
+               
+                cursor.execute("INSERT INTO habits (name, description, periodicity, created_date, completion_date, completion_time) VALUES (?, ?, ?, ?, ?, ?)",
+                           (name, description, periodicity, created_date.strftime("%#m/%#d/%Y %H:%M"), completion_date, completion_time))
+                self.connection.commit()
+
+            return True
         except Exception as e:
             self.connection.rollback()
-            return False  
-
-    def get_habit_by_name(self, name: str) -> Habit:
-        """Get a habit by its name."""
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM habits WHERE name=?", (name,))
-        row = cursor.fetchone()
-        if row:
-            name, description, periodicity, created_date, completion_date, completion_time = row[:6]
-            return Habit(name, description, periodicity, created_date, completion_date, completion_time)
-        else:
-            return None
-    
+            return False
+      
     def check_habit_done(self, habit_name: str, completion_date: str, periodicity: str) -> bool:
         """Check if a habit has been marked as done within the specified period."""
         cursor = self.connection.cursor()
         query_date = datetime.strptime(completion_date, "%m/%d/%Y")
-        formatted_date = query_date.strftime("%#m/%#d/%Y")
 
-        if periodicity == "daily":            
+        if periodicity == "daily":
             start_of_day = completion_date + " 00:00:00"
             end_of_day = completion_date + " 23:59:59"
-            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?",
-                       (habit_name, start_of_day, end_of_day))
-        elif periodicity == "weekly":           
-            query_date = datetime.strptime(completion_date, "%#m/%#d/%Y")
+            cursor.execute("SELECT COUNT(*) FROM completions WHERE name=? AND completion_date = ? AND periodicity = ?",
+                       (habit_name, completion_date, periodicity))
+        elif periodicity == "weekly":
             start_of_week = query_date - timedelta(days=query_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
             start_of_week_str = start_of_week.strftime("%#m/%#d/%Y") + " 00:00:00"
             end_of_week_str = end_of_week.strftime("%#m/%#d/%Y") + " 23:59:59"
-            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ?",
-                       (habit_name, start_of_week_str, end_of_week_str))
+            cursor.execute("SELECT COUNT(*) FROM completions WHERE name=? AND completion_date BETWEEN ? AND ? AND periodicity = ?",
+                       (habit_name, start_of_week_str, end_of_week_str, periodicity))
 
         count_row = cursor.fetchone()
         if count_row:
             count = count_row[0]
-            return count > 0  
+            return count > 0
         else:
             return False
 
