@@ -1,9 +1,8 @@
 from datetime import datetime
-import analytics
 from database import HabitDatabase
 from initialize_database import initialize_database
-from analytics import view_longest_streak_menu
-
+from habit_tracker_predefined import check_habit_status_predefined_daily
+from habit_tracker_predefined import get_predefined_daily_habits
 
 
 def main(habit_database):
@@ -96,7 +95,7 @@ def view_habits_menu(habit_database, predefined_habits):
     daily_habits = habit_database.get_habits_by_periodicity("Daily")
     weekly_habits = habit_database.get_habits_by_periodicity("Weekly")
 
-    predefined_daily_habits = habit_database.get_predefined_habits_by_periodicity_from_predefined_habits_table("Daily")
+    predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
     predefined_weekly_habits = habit_database.get_predefined_habits_by_periodicity_from_predefined_habits_table("Weekly")
 
     total_habits = len(daily_habits) + len(weekly_habits) + len(predefined_daily_habits) + len(predefined_weekly_habits)
@@ -156,9 +155,8 @@ def view_habits_menu(habit_database, predefined_habits):
                 else:
                     selected_habit = predefined_weekly_habits[choice - len(daily_habits) - len(weekly_habits) - len(predefined_daily_habits) - 1]
                     periodicity = "Predefined Weekly"
-                if manage_selected_habit_menu(habit_database, selected_habit, periodicity):                    
-                    predefined_habits = habit_database.get_predefined_habits()
-                break
+                if manage_selected_habit_menu(habit_database, selected_habit, periodicity, predefined_habits):                    
+                    break
             else:
                 print(f"~ Invalid choice. Please enter a number from 1 to {total_habits}.")
         else:
@@ -167,7 +165,7 @@ def view_habits_menu(habit_database, predefined_habits):
     return False
 
 
-def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
+def manage_selected_habit_menu(habit_database, selected_habit, periodicity, predefined_habits):
     """Menu for managing a selected habit."""
     if isinstance(selected_habit, str):       
         habit_name = selected_habit
@@ -187,10 +185,14 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
 
         if choice == "1":
             mark_habit_as_done(habit_database, habit_name, periodicity)
-            break
+            return True
         elif choice == "2":
-            check_habit_status(habit_database, habit_name)
-            break
+            predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
+            if any(habit['name'] == habit_name for habit in predefined_daily_habits):
+                habit_status = check_habit_status_predefined_daily(habit_name)
+                print(f"Habit Status for '{habit_name}':")
+                print(habit_status.to_string(index=False, justify='center'))
+                return True           
         elif choice == "3":
             if is_predefined:
                 if delete_predefined_habit(habit_database, habit_name):
@@ -205,7 +207,6 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity):
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
-    return False
 
 def delete_predefined_habit(habit_database, habit_name):
     """Delete a predefined habit."""
@@ -228,7 +229,7 @@ def delete_habit(habit_database, habit_name):
        
 def mark_habit_as_done(habit_database, habit_name, periodicity):
     """Marks a habit as Done."""
-    completion_date = datetime.now().strftime("%#m/%#d/%Y")
+    completion_date = datetime.now().strftime("%m/%d/%Y")
 
     if habit_database.check_habit_done(habit_name, completion_date, periodicity):
         if periodicity == "Weekly":
@@ -245,16 +246,7 @@ def mark_habit_as_done(habit_database, habit_name, periodicity):
                 message = f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n"
             else:
                 message = f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n"
-            print(message)
-        
-def check_habit_status(habit_database, habit_name):
-    pass
-
-def check_predefined_habit_status(habit_database):
-    pass
-     
-def get_predefined_habit_status(self, habit_name):
-    pass
+            print(message)       
 
 def clear_all_habits(habit_database):
     """Clear all habits."""
@@ -290,12 +282,14 @@ def view_habit_hall_of_fame_menu(habit_database):
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
-
+def view_longest_streak_menu(habit_database, periodicity):
+    pass
 
 
 if __name__ == "__main__":
     habit_database = HabitDatabase() 
-    try:
+    try:        
         main(habit_database)
     finally:
         habit_database.close()
+

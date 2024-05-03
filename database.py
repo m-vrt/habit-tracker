@@ -72,7 +72,7 @@ class HabitDatabase:
     def add_habit(self, name: str, description: str, periodicity: str) -> None:
         """Add a habit to the database."""
         cursor = self.connection.cursor()
-        created_date = datetime.now().strftime("%#m/%#d/%Y %H:%M")  
+        created_date = datetime.now().strftime("%m/%d/%Y %H:%M")  
         cursor.execute("INSERT INTO habits (name, description, periodicity, created_date) VALUES (?, ?, ?, ?)",
                    (name, description, periodicity, created_date))
         self.connection.commit()
@@ -136,7 +136,7 @@ class HabitDatabase:
        
     def complete_habit(self, name: str, description: str, periodicity: str) -> bool:
         """Mark a habit as completed."""
-        completion_date = datetime.now().strftime("%#m/%#d/%Y")
+        completion_date = datetime.now().strftime("%m/%d/%Y")
         completion_time = datetime.now().strftime("%H:%M:%S")
 
         cursor = self.connection.cursor()
@@ -159,7 +159,7 @@ class HabitDatabase:
                     raise ValueError("No habit found with the given name")
                
                 cursor.execute("INSERT INTO habits (name, description, periodicity, created_date, completion_date, completion_time) VALUES (?, ?, ?, ?, ?, ?)",
-                           (name, description, periodicity, created_date.strftime("%#m/%#d/%Y %H:%M"), completion_date, completion_time))
+                           (name, description, periodicity, created_date.strftime("%m/%d/%Y %H:%M"), completion_date, completion_time))
                 self.connection.commit()
 
             return True
@@ -171,7 +171,7 @@ class HabitDatabase:
         """Check if a habit has been marked as done within the specified period."""
         cursor = self.connection.cursor()
         query_date = datetime.strptime(completion_date, "%m/%d/%Y")
-
+       
         if periodicity == "daily":
             start_of_day = completion_date + " 00:00:00"
             end_of_day = completion_date + " 23:59:59"
@@ -180,8 +180,8 @@ class HabitDatabase:
         elif periodicity == "weekly":
             start_of_week = query_date - timedelta(days=query_date.weekday())
             end_of_week = start_of_week + timedelta(days=6)
-            start_of_week_str = start_of_week.strftime("%#m/%#d/%Y") + " 00:00:00"
-            end_of_week_str = end_of_week.strftime("%#m/%#d/%Y") + " 23:59:59"
+            start_of_week_str = start_of_week.strftime("%m/%d/%Y") + " 00:00:00"
+            end_of_week_str = end_of_week.strftime("%m/%d/%Y") + " 23:59:59"
             cursor.execute("SELECT COUNT(*) FROM completions WHERE name=? AND completion_date BETWEEN ? AND ? AND periodicity = ?",
                        (habit_name, start_of_week_str, end_of_week_str, periodicity))
 
@@ -255,7 +255,7 @@ class HabitDatabase:
                           SELECT id, name, description, periodicity, created_date, completion_date, completion_time
                           FROM predefined_data""")
         self.connection.commit()
-
+    
     
     
     def close(self):

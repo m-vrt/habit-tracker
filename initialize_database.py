@@ -22,6 +22,7 @@ def initialize_database(habit_database):
 
     return predefined_daily_habits, predefined_weekly_habits
 
+
 if __name__ == "__main__":
     
     habit_database = HabitDatabase()  

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from collections import Counter
 
-
 class Habit:
     """Represents a habit."""
 
@@ -21,55 +20,11 @@ class Habit:
         self.name = name
         self.description = description
         self.periodicity = periodicity
-        self.created_date = created_date or datetime.now().date()
-        self.completed_tasks = []
-        self.streak_counter = Counter()
-        self.streak = streak or 0
-        self.last_completion_date = None 
+        self.created_date = created_date 
+        self.completion_date = completion_date
+        self.completion_time = completion_time
+        self.streak = streak 
+        self.counter = counter
 
-    def complete_task(self):
-        """
-        Mark a task as completed.
 
-        This method is called when a user completes a task associated with the habit.
-        """
-        completion_time = datetime.now()
-        self.completed_tasks.append(completion_time)
-        self.update_streak(completion_time)
-        self.last_completion_date = completion_time  
-
-    def update_streak(self, completion_time):
-        """
-        Update streak based on consecutive completions within the defined period.
-
-        This method updates the streak based on consecutive completions of tasks within
-        the defined period for the habit.
-        """
-        last_completion_time = self.last_completion_date
-        if last_completion_time and self.check_if_streak_continues_within_period(completion_time):
-            self.streak += 1
-        else:
-            self.streak = 1
-
-    def check_if_streak_continues_within_period(self, completion_time):
-        """
-        Check if the streak continues based on consecutive completions within the defined period.
-
-        This method checks if the current completion continues a streak by comparing
-        the completion date with the date of the last completed task within the defined period.
-        """
-        last_completion_time = self.last_completion_date
-        if last_completion_time:
-            current_time = completion_time
-
-            if self.periodicity == 'Daily':
-                periodicity_days = 1
-            elif self.periodicity == 'Weekly':
-                periodicity_days = 7
-            else:
-                raise ValueError("Invalid value for periodicity")
-
-            period_start_time = current_time - timedelta(days=periodicity_days)
-            return period_start_time <= last_completion_time < current_time
-        return False
-
+  
