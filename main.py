@@ -1,8 +1,13 @@
 from datetime import datetime
 from database import HabitDatabase
 from initialize_database import initialize_database
-from habit_tracker_predefined import check_habit_status_predefined_daily
-from habit_tracker_predefined import get_predefined_daily_habits
+from habit_tracker_predefined import (
+    check_habit_status_predefined_daily,
+    get_predefined_daily_habits,
+    check_habit_status_predefined_weekly,
+    get_predefined_weekly_habits
+)
+
 
 
 def main(habit_database):
@@ -96,7 +101,7 @@ def view_habits_menu(habit_database, predefined_habits):
     weekly_habits = habit_database.get_habits_by_periodicity("Weekly")
 
     predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
-    predefined_weekly_habits = habit_database.get_predefined_habits_by_periodicity_from_predefined_habits_table("Weekly")
+    predefined_weekly_habits = get_predefined_weekly_habits(predefined_habits)
 
     total_habits = len(daily_habits) + len(weekly_habits) + len(predefined_daily_habits) + len(predefined_weekly_habits)
     current_index = 1
@@ -188,8 +193,15 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
             return True
         elif choice == "2":
             predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
+            predefined_weekly_habits = get_predefined_weekly_habits(predefined_habits)
+    
             if any(habit['name'] == habit_name for habit in predefined_daily_habits):
                 habit_status = check_habit_status_predefined_daily(habit_name)
+                print(f"Habit Status for '{habit_name}':")
+                print(habit_status.to_string(index=False, justify='center'))
+                return True    
+            elif any(habit['name'] == habit_name for habit in predefined_weekly_habits):
+                habit_status = check_habit_status_predefined_weekly(habit_name)
                 print(f"Habit Status for '{habit_name}':")
                 print(habit_status.to_string(index=False, justify='center'))
                 return True           
@@ -292,4 +304,3 @@ if __name__ == "__main__":
         main(habit_database)
     finally:
         habit_database.close()
-

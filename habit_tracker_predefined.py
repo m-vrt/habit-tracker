@@ -67,7 +67,7 @@ habit_data = [
     {"id": 62, "name": "Research", "description": "Do some research", "periodicity": "Daily", "created_date": "3/3/2024 17:37", "completion_date": "3/29/2024", "completion_time": "22:06:05"},
     {"id": 63, "name": "Research", "description": "Do some research", "periodicity": "Daily", "created_date": "3/3/2024 17:37", "completion_date": "3/30/2024", "completion_time": "19:24:46"},
     {"id": 64, "name": "Clean House", "description": "Do household chores", "periodicity": "Weekly", "created_date": "3/1/2024 19:45", "completion_date": "3/1/2024", "completion_time": "21:55:33"},
-    {"id": 65, "name": "Clean House", "description": "Do household chores", "periodicity": "Weekly", "created_date": "3/1/2024 19:45", "completion_date": "3/6/2024", "completion_time": "21:40:37"},
+    {"id": 65, "name": "Clean House", "description": "Do household chores", "periodicity": "Weekly", "created_date": "3/1/2024 19:45", "completion_date": "3/8/2024", "completion_time": "21:40:37"},
     {"id": 66, "name": "Clean House", "description": "Do household chores", "periodicity": "Weekly", "created_date": "3/1/2024 19:45", "completion_date": "3/19/2024", "completion_time": "21:26:50"},
     {"id": 67, "name": "Call Family", "description": "Check in with family members", "periodicity": "Weekly", "created_date": "3/4/2024 16:15", "completion_date": "3/9/2024", "completion_time": "23:59:59"},
     {"id": 68, "name": "Call Family", "description": "Check in with family members", "periodicity": "Weekly", "created_date": "3/4/2024 16:15", "completion_date": "3/16/2024", "completion_time": "19:30:45"},
@@ -101,3 +101,43 @@ def get_predefined_daily_habits(habit_data: List[Dict[str, Any]]) -> List[Dict[s
                 unique_predefined_daily_habits.append(habit)
 
     return unique_predefined_daily_habits
+
+def check_habit_status_predefined_weekly(habit_name):
+    habit_df = pd.DataFrame(habit_data)
+    habit_df = habit_df[(habit_df['name'] == habit_name) & (habit_df['periodicity'] == 'Weekly')]
+    habit_df['completion_date'] = pd.to_datetime(habit_df['completion_date'], format='%m/%d/%Y')
+    
+    habit_status = []
+   
+    created_date = pd.to_datetime(habit_df['created_date'].iloc[0]).date() 
+
+    for week in range(1, 6):     
+        week_start = created_date + pd.DateOffset(days=(week - 1) * 7)
+        week_end = min(created_date + pd.DateOffset(days=week * 7), pd.Timestamp(year=2024, month=3, day=31))
+        week_completion = habit_df[
+            (habit_df['completion_date'] >= week_start) & (habit_df['completion_date'] < week_end)
+        ]['completion_date'].max()
+
+        if pd.notnull(week_completion):
+            habit_status.append({'Period': f'Week {week}:', 'Completion': f'Completed on {week_completion.date()}'})
+        else:
+            habit_status.append({'Period': f'Week {week}:', 'Completion': ''})
+
+        if week == 4 and pd.Timestamp(year=2024, month=3, day=31) <= week_end:
+            break
+
+    return pd.DataFrame(habit_status)
+
+def get_predefined_weekly_habits(habit_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Get the list of unique predefined weekly habits."""
+    unique_habits = set()
+    unique_predefined_weekly_habits = []
+
+    for habit in habit_data:
+        if habit['periodicity'] == 'Weekly':
+            habit_name = habit['name']
+            if habit_name not in unique_habits:
+                unique_habits.add(habit_name)
+                unique_predefined_weekly_habits.append(habit)
+
+    return unique_predefined_weekly_habits
