@@ -209,14 +209,16 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 print(habit_status.to_string(index=False, justify='center'))
                 return True           
         elif choice == "3":
-            if is_predefined:                
-                print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be deleted.\n")
+            created_date = habit_database.get_created_date(habit_name)
+            is_predefined = habit_database.is_predefined_habit(habit_name)
+    
+            if is_predefined:
+                manage_habits_menu(habit_database, predefined_habits) 
                 return True         
             else:
-                created_date = habit_database.get_created_date(habit_name)
+                
                 habit_database.delete_habit(habit_name, created_date)            
-                print(f"~ Habit '{habit_name}' successfully deleted!\n")    
-                return True                  
+                return True             
         elif choice == "4":
             manage_habits_menu(habit_database, predefined_habits) 
             return True 
@@ -230,7 +232,7 @@ def mark_habit_as_done(habit_database, habit_name, periodicity):
     completion_date = datetime.now().strftime("%m/%d/%Y")
     description = habit_database.get_habit_description(habit_name)
 
-    if habit_database.is_predefined_habit(habit_name, description, periodicity):
+    if habit_database.is_predefined_habit(habit_name):
         message = f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n"
         print(message)
     elif habit_database.check_habit_done(habit_name, completion_date, periodicity):

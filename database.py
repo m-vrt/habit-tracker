@@ -52,12 +52,16 @@ class HabitDatabase:
     def delete_habit(self, name: str, created_date: str) -> None:
         """Delete habits with the given name and created_date from the database."""
         cursor = self.connection.cursor()
-        try:
-            cursor.execute("DELETE FROM habits WHERE name=? AND created_date=?", (name, created_date))
-            self.connection.commit()
+        try:          
+            if self.is_predefined_habit(name):
+                print(f"~ Sorry, but predefined habits like the habit '{name}' cannot be deleted.\n")
+            else:
+                cursor.execute("DELETE FROM habits WHERE name=? AND created_date=?", (name, created_date))
+                self.connection.commit()
+                print(f"~ Habit '{name}' successfully deleted!\n")
         except sqlite3.IntegrityError as e:           
-            print(f"Error deleting habit: {e}")        
-  
+            print(f"Error deleting habit: {e}")
+       
     def get_habits_by_periodicity(self, periodicity):
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
@@ -114,10 +118,10 @@ class HabitDatabase:
         cursor.execute("DELETE FROM habits")    
         self.connection.commit()
            
-    def is_predefined_habit(self, habit_name: str, description: str, periodicity: str) -> bool:
+    def is_predefined_habit(self, habit_name: str) -> bool:
         """Check if a habit is predefined."""
         cursor = self.connection.cursor()
-        cursor.execute("SELECT COUNT(*) FROM predefined_data WHERE name=? AND description=? AND periodicity=?", (habit_name, description, periodicity))
+        cursor.execute("SELECT COUNT(*) FROM predefined_data WHERE name=?", (habit_name,))
         result = cursor.fetchone()
         if result and result[0] > 0:
             return True
