@@ -207,58 +207,48 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 return True           
         elif choice == "3":
             if is_predefined:
-                if delete_predefined_habit(habit_database, habit_name):
-                    print(f"~ Habit ('{habit_name}') successfully deleted!\n")
-                return True               
+                print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be deleted.\n")
+                view_habits_menu(habit_database, predefined_habits)
+                return False
             else:
-                if delete_habit(habit_database, habit_name):
-                    print(f"~ Habit ('{habit_name}') successfully deleted!\n")
-                return True
+                if delete_habit(habit_database, habit_name):            
+                    return True   
         elif choice == "4":
             return False  
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
-
-def delete_predefined_habit(habit_database, habit_name):
-    """Delete a predefined habit."""
-    try:
-        habit_database.delete_predefined_habit(habit_name)   
-    except ValueError as e:
-        print(e)
+    return False 
+    
 
 def delete_habit(habit_database, habit_name):
     """Delete a habit."""
-    try:
-        if habit_database.is_predefined_habit(habit_name):            
-            habit_database.delete_predefined_habit(habit_name)
-        else:          
-            habit_database.delete_habit(habit_name)           
+    if habit_database.delete_habit(habit_name):
+        print(f"~ Habit ('{habit_name}') successfully deleted!\n")
         return True
-    except ValueError as e:
-        print(e)
-        return False
+    return False
        
 def mark_habit_as_done(habit_database, habit_name, periodicity):
     """Marks a habit as Done."""
     completion_date = datetime.now().strftime("%m/%d/%Y")
+    description = habit_database.get_habit_description(habit_name)
 
-    if habit_database.check_habit_done(habit_name, completion_date, periodicity):
-        if periodicity == "Weekly":
-            message = f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done this week. Please check back next week.\n"
-        else:
-            message = f"~ Sorry, but you've already marked the habit ('{habit_name}') as Done today. Please check back tomorrow.\n"
-        print(message)
-    elif habit_database.is_predefined_habit(habit_name):
+    if habit_database.is_predefined_habit(habit_name):
         message = f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n"
         print(message)
+    elif habit_database.check_habit_done(habit_name, completion_date, periodicity):
+        if periodicity == "Weekly":
+            message = f"~ Sorry, but you've already marked the habit '{habit_name}' as Done this week. Please check back next week.\n"
+        else:
+            message = f"~ Sorry, but you've already marked the habit '{habit_name}' as Done today. Please check back tomorrow.\n"
+        print(message)
     else:
-        if habit_database.complete_habit(habit_name, None, periodicity): 
+        if habit_database.complete_habit(habit_name, description, periodicity): 
             if periodicity == "Weekly":
                 message = f"~ Hurray! Habit '{habit_name}' marked as Done for this week.\n"
             else:
                 message = f"~ Hurray! Habit '{habit_name}' marked as Done for today.\n"
-            print(message)       
+            print(message)
 
 def clear_all_habits(habit_database):
     """Clear all habits."""

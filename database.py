@@ -88,30 +88,18 @@ class HabitDatabase:
                        (name, description, periodicity))
             self.connection.commit()
              
-    def delete_habit(self, name: str) -> None:
+    def delete_habit(self, name: str, predefined_habits: list[str]) -> bool:
         """Delete a habit from the database."""
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute("DELETE FROM habits WHERE name=?", (name,))
-            if cursor.rowcount == 0:
-                raise ValueError("No habit found with the given name")
-            self.connection.commit()
-        except sqlite3.IntegrityError as e:
-            raise e
+        if name in predefined_habits:
+            return False
 
-    def delete_predefined_habit(self, name: str) -> None:
-        """Delete a predefined habit from the database."""
         cursor = self.connection.cursor()
-        try:
-            cursor.execute("DELETE FROM completions WHERE name=?", (name,))
-            cursor.execute("DELETE FROM predefined_habits WHERE name=?", (name,))
-            if cursor.rowcount == 0:
-                print("DEBUG: No predefined habit found with the given name:", name)  
-                raise ValueError("No predefined habit found with the given name")
-            self.connection.commit()
-        except sqlite3.IntegrityError as e:
-            raise e
-
+        cursor.execute("DELETE FROM habits WHERE name=?", (name,))
+        if cursor.rowcount == 0:
+            return False
+        self.connection.commit()
+        return True
+ 
     def get_habits(self):
         """Get the list of habits."""
         cursor = self.connection.cursor()
@@ -150,23 +138,20 @@ class HabitDatabase:
                 cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=? AND completion_date IS NULL AND periodicity=?",
                            (completion_date, completion_time, name, periodicity))
                 self.connection.commit()
-            else:                
-                cursor.execute("SELECT created_date FROM habits WHERE name=? LIMIT 1", (name,))
-                row = cursor.fetchone()
-                if row:
-                    created_date = row[0]
-                else:
-                    raise ValueError("No habit found with the given name")
-               
+            else:              
+                created_date = datetime.now().strftime("%m/%d/%Y %H:%M")
                 cursor.execute("INSERT INTO habits (name, description, periodicity, created_date, completion_date, completion_time) VALUES (?, ?, ?, ?, ?, ?)",
-                           (name, description, periodicity, created_date.strftime("%m/%d/%Y %H:%M"), completion_date, completion_time))
+                       (name, description, periodicity, created_date, completion_date, completion_time))
                 self.connection.commit()
-
+            
+            cursor.execute("""SELECT * FROM habits
+                          ORDER BY name, created_date, CASE periodicity WHEN 'Daily' THEN 1 ELSE 2 END, completion_date""")
+        
             return True
         except Exception as e:
             self.connection.rollback()
             return False
-      
+       
     def check_habit_done(self, habit_name: str, completion_date: str, periodicity: str) -> bool:
         """Check if a habit has been marked as done within the specified period."""
         cursor = self.connection.cursor()
@@ -203,8 +188,7 @@ class HabitDatabase:
     def clear_all_predefined_habits(self):
         """Clear all predefined habits from the database."""
         cursor = self.connection.cursor()
-        cursor.execute("DELETE FROM predefined_habits")
-        cursor.execute("DELETE FROM completions")
+        cursor.execute("DELETE FROM predefined_habits")      
         self.connection.commit()
 
     def mark_habit_as_predefined(self, habit_name):
@@ -256,7 +240,14 @@ class HabitDatabase:
                           FROM predefined_data""")
         self.connection.commit()
     
-    
+    def get_habit_description(self, habit_name: str) -> str:
+        """Get the description of a habit by its name."""
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT description FROM habits WHERE name=?", (habit_name,))
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        return ""
     
     def close(self):
         """Close the database connection."""

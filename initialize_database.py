@@ -6,8 +6,7 @@ def initialize_database(habit_database):
 
     try:
         habit_database.clear_all_predefined_habits()
-        habit_database.copy_predefined_data_to_completions()
-
+       
         predefined_daily_habits = habit_database.get_predefined_habits_by_periodicity("Daily")
         predefined_weekly_habits = habit_database.get_predefined_habits_by_periodicity("Weekly")
 
