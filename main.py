@@ -218,7 +218,8 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 print(f"~ Habit '{habit_name}' successfully deleted!\n")    
                 return True                  
         elif choice == "4":
-            return False  
+            manage_habits_menu(habit_database, predefined_habits) 
+            return True 
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
@@ -250,7 +251,7 @@ def clear_all_habits(habit_database):
     """Clear all habits."""
     try:       
         habit_database.clear_all_habits()    
-        print("~ Daily and weekly habits cleared.\n")
+        print("~ Daily and Weekly Habits cleared.\n")
     except Exception as e:
         print(f"An error occurred: {e}")
 
