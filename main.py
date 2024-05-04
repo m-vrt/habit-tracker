@@ -26,7 +26,7 @@ def main(habit_database):
         elif choice == "3":
             view_habit_hall_of_fame_menu(habit_database)
         elif choice == "4":
-            print("~ Quitting the Habit Tracker...")
+            print("~ Quitting the Habit Tracker...\n\n\n")
             habit_database.close()
             break
         else:
@@ -91,7 +91,8 @@ def manage_habits_menu(habit_database, predefined_habits):
         elif choice == "2":
             clear_all_habits(habit_database)
         elif choice == "3":
-            break
+            print("~ Returning to Main Menu...\n\n")
+            return
         else:
             print("~ Invalid choice. Please enter a number from 1 to 3.")
 
@@ -209,23 +210,22 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 print(habit_status.to_string(index=False, justify='center'))
                 return True           
         elif choice == "3":
-            created_date = habit_database.get_created_date(habit_name)
             is_predefined = habit_database.is_predefined_habit(habit_name)
     
             if is_predefined:
+                print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be deleted.\n")
                 manage_habits_menu(habit_database, predefined_habits) 
                 return True         
             else:
-                
+                created_date = habit_database.get_created_date(habit_name)
                 habit_database.delete_habit(habit_name, created_date)            
                 return True             
         elif choice == "4":
-            manage_habits_menu(habit_database, predefined_habits) 
-            return True 
+            print("~ Returning to Previous Menu...\n\n")
+            return True
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
-
-    return False 
+   
         
 def mark_habit_as_done(habit_database, habit_name, periodicity):
     """Marks a habit as Done."""
@@ -278,7 +278,8 @@ def view_habit_hall_of_fame_menu(habit_database):
             view_longest_streak_menu(habit_database, periodicity="All")
             break
         elif choice == "4":
-            return  
+            print("~ Returning to Main Menu...\n\n")
+            return 
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 

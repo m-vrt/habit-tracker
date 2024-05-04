@@ -53,12 +53,9 @@ class HabitDatabase:
         """Delete habits with the given name and created_date from the database."""
         cursor = self.connection.cursor()
         try:          
-            if self.is_predefined_habit(name):
-                print(f"~ Sorry, but predefined habits like the habit '{name}' cannot be deleted.\n")
-            else:
-                cursor.execute("DELETE FROM habits WHERE name=? AND created_date=?", (name, created_date))
-                self.connection.commit()
-                print(f"~ Habit '{name}' successfully deleted!\n")
+            cursor.execute("DELETE FROM habits WHERE name=? AND created_date=?", (name, created_date))
+            self.connection.commit()
+            print(f"~ Habit '{name}' successfully deleted!\n")
         except sqlite3.IntegrityError as e:           
             print(f"Error deleting habit: {e}")
        
