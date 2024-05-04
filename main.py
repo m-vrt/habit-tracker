@@ -1,7 +1,7 @@
 from datetime import datetime
 from database import HabitDatabase
-from initialize_database import initialize_database
 from habit_tracker_predefined import (
+    habit_data,
     check_habit_status_predefined_daily,
     get_predefined_daily_habits,
     check_habit_status_predefined_weekly,
@@ -9,14 +9,12 @@ from habit_tracker_predefined import (
 )
 
 
-
 def main(habit_database):
     """Main function to initialize and run the Habit Tracker."""
     print("\n\n~WELCOME TO THE HABIT TRACKER (by MV)~\n")
 
-    predefined_daily_habits, predefined_weekly_habits = initialize_database(habit_database)
-    predefined_habits = predefined_daily_habits + predefined_weekly_habits
-
+    predefined_habits = get_predefined_habits(habit_data)
+   
     while True:
         print_menu()
         choice = input("\nPlease enter the number of your choice: ").strip()
@@ -34,6 +32,12 @@ def main(habit_database):
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
+def get_predefined_habits(habit_data):
+    """Retrieve predefined daily and weekly habits."""
+    predefined_daily_habits = get_predefined_daily_habits(habit_data)
+    predefined_weekly_habits = get_predefined_weekly_habits(habit_data)
+    return predefined_daily_habits + predefined_weekly_habits
+
 def print_menu():
     """Print the menu options."""
     print("\nWhat would you like to do?\n")
@@ -41,7 +45,6 @@ def print_menu():
     print("2. Manage Habits")
     print("3. View Habit Hall of Fame")
     print("4. Quit")
-
 
 def add_habit_menu(habit_database):
     """Menu for adding a new habit."""
@@ -174,7 +177,7 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
     """Menu for managing a selected habit."""
     if isinstance(selected_habit, str):       
         habit_name = selected_habit
-        is_predefined = True
+        is_predefined = habit_database.is_predefined_habit(habit_name)
     else:       
         habit_name = selected_habit['name']
         is_predefined = False
@@ -206,28 +209,21 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 print(habit_status.to_string(index=False, justify='center'))
                 return True           
         elif choice == "3":
-            if is_predefined:
+            if is_predefined:                
                 print(f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be deleted.\n")
-                view_habits_menu(habit_database, predefined_habits)
-                return False
+                return True         
             else:
-                if delete_habit(habit_database, habit_name):            
-                    return True   
+                created_date = habit_database.get_created_date(habit_name)
+                habit_database.delete_habit(habit_name, created_date)            
+                print(f"~ Habit '{habit_name}' successfully deleted!\n")    
+                return True                  
         elif choice == "4":
             return False  
         else:
             print("~ Invalid choice. Please enter a number from 1 to 4.")
 
     return False 
-    
-
-def delete_habit(habit_database, habit_name):
-    """Delete a habit."""
-    if habit_database.delete_habit(habit_name):
-        print(f"~ Habit ('{habit_name}') successfully deleted!\n")
-        return True
-    return False
-       
+        
 def mark_habit_as_done(habit_database, habit_name, periodicity):
     """Marks a habit as Done."""
     completion_date = datetime.now().strftime("%m/%d/%Y")
@@ -254,7 +250,6 @@ def clear_all_habits(habit_database):
     """Clear all habits."""
     try:       
         habit_database.clear_all_habits()    
-        habit_database.clear_all_predefined_habits()
         print("~ All habits cleared.\n")
     except Exception as e:
         print(f"An error occurred: {e}")
