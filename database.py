@@ -54,12 +54,10 @@ class HabitDatabase:
         cursor = self.connection.cursor()
         try:
             cursor.execute("DELETE FROM habits WHERE name=? AND created_date=?", (name, created_date))
-            deleted_count = cursor.rowcount
-            if deleted_count != 0:
-                self.connection.commit()
-        except sqlite3.IntegrityError as e:
-            raise e
-   
+            self.connection.commit()
+        except sqlite3.IntegrityError as e:           
+            print(f"Error deleting habit: {e}")        
+  
     def get_habits_by_periodicity(self, periodicity):
         """Get habits filtered by periodicity."""
         cursor = self.connection.cursor()
@@ -83,7 +81,9 @@ class HabitDatabase:
 
         cursor = self.connection.cursor()
 
-        try:            
+        try: 
+            cursor.execute("SELECT created_date FROM habits WHERE name=? AND periodicity=? ORDER BY created_date ASC LIMIT 1", (name, periodicity))
+            original_created_date = cursor.fetchone()[0]       
             existing_completion_query = "SELECT COUNT(*) FROM habits WHERE name=? AND completion_date IS NOT NULL AND periodicity=?"
             cursor.execute(existing_completion_query, (name, periodicity))
             existing_completion_count = cursor.fetchone()[0]
@@ -92,10 +92,9 @@ class HabitDatabase:
                 cursor.execute("UPDATE habits SET completion_date=?, completion_time=? WHERE name=? AND completion_date IS NULL AND periodicity=?",
                            (completion_date, completion_time, name, periodicity))
                 self.connection.commit()
-            else:              
-                created_date = datetime.now().strftime("%m/%d/%Y %H:%M")
+            else:             
                 cursor.execute("INSERT INTO habits (name, description, periodicity, created_date, completion_date, completion_time) VALUES (?, ?, ?, ?, ?, ?)",
-                       (name, description, periodicity, created_date, completion_date, completion_time))
+                       (name, description, periodicity, original_created_date, completion_date, completion_time))
                 self.connection.commit()
             
             cursor.execute("""SELECT * FROM habits

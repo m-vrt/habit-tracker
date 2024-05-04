@@ -229,7 +229,7 @@ def mark_habit_as_done(habit_database, habit_name, periodicity):
     completion_date = datetime.now().strftime("%m/%d/%Y")
     description = habit_database.get_habit_description(habit_name)
 
-    if habit_database.is_predefined_habit(habit_name):
+    if habit_database.is_predefined_habit(habit_name, description, periodicity):
         message = f"~ Sorry, but predefined habits like the habit '{habit_name}' cannot be marked as Done.\n"
         print(message)
     elif habit_database.check_habit_done(habit_name, completion_date, periodicity):
@@ -250,7 +250,7 @@ def clear_all_habits(habit_database):
     """Clear all habits."""
     try:       
         habit_database.clear_all_habits()    
-        print("~ All habits cleared.\n")
+        print("~ Daily and weekly habits cleared.\n")
     except Exception as e:
         print(f"An error occurred: {e}")
 
