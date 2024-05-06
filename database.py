@@ -106,8 +106,48 @@ class HabitDatabase:
             self.connection.rollback()
             return False
        
-    def check_habit_done(self, habit_name: str, completion_date: str, periodicity: str) -> bool:
-        pass
+    def check_habit_done(self, habit_name, completion_date, periodicity):
+        """Checks if a habit has already been marked as done for the given period."""
+        completion_date = datetime.now().strftime("%m/%d/%Y")
+      
+        if periodicity == "Daily":
+            return self.check_daily_completion(habit_name, completion_date)
+            
+        elif periodicity == "Weekly":
+            start_date, end_date = self.calculate_week_boundaries(self.get_created_date(habit_name))
+            return self.check_weekly_completion(habit_name, start_date, end_date)
+       
+        else:
+            return False
+
+    def calculate_week_boundaries(self, created_date_str):
+        """Calculate the start and end dates of the week based on the created date."""     
+        created_date = datetime.strptime(created_date_str, "%m/%d/%Y %H:%M") 
+        start_of_week = created_date - timedelta(days=created_date.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+        return start_of_week, end_of_week
+
+    def check_daily_completion(self, habit_name, completion_date):
+        """Checks if a habit has been completed for today."""
+        cursor = self.connection.cursor()
+
+        try:          
+            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date=? AND periodicity='Daily'", (habit_name, completion_date))
+            count = cursor.fetchone()[0]
+            return count > 0
+        except Exception as e:       
+            return False
+
+    def check_weekly_completion(self, habit_name, start_date, end_date):
+        """Checks if a habit has been completed for the current week."""
+        cursor = self.connection.cursor()
+
+        try:           
+            cursor.execute("SELECT COUNT(*) FROM habits WHERE name=? AND completion_date BETWEEN ? AND ? AND periodicity='Weekly'", (habit_name, start_date, end_date))
+            count = cursor.fetchone()[0]
+            return count > 0
+        except Exception as e:           
+            return False
 
     def clear_all_habits(self):
         """Clear all user-defined habits from the database."""
