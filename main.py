@@ -7,6 +7,13 @@ from habit_tracker_predefined import (
     check_habit_status_predefined_weekly,
     get_predefined_weekly_habits
 )
+from habit_tracker import (
+    get_habit_data_from_database,
+    check_habit_status_daily_for_habit_tracker,
+    get_daily_habits_for_habit_tracker,
+    check_habit_status_weekly_for_habit_tracker,
+    get_weekly_habits_for_habit_tracker
+)
 
 
 def main(habit_database):
@@ -198,6 +205,8 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
         elif choice == "2":
             predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
             predefined_weekly_habits = get_predefined_weekly_habits(predefined_habits)
+            daily_habits = get_daily_habits_for_habit_tracker()
+            weekly_habits = get_weekly_habits_for_habit_tracker()
     
             if any(habit['name'] == habit_name for habit in predefined_daily_habits):
                 habit_status = check_habit_status_predefined_daily(habit_name)
@@ -208,7 +217,17 @@ def manage_selected_habit_menu(habit_database, selected_habit, periodicity, pred
                 habit_status = check_habit_status_predefined_weekly(habit_name)
                 print(f"Habit Status for '{habit_name}':")
                 print(habit_status.to_string(index=False, justify='center'))
-                return True           
+                return True 
+            elif any(habit['name'] == habit_name for habit in daily_habits):
+                habit_status = check_habit_status_daily_for_habit_tracker(habit_name, habit_data)
+                print(f"Habit Status for '{habit_name}':")
+                print(habit_status.to_string(index=False, justify='center'))
+                return True
+            elif any(habit['name'] == habit_name for habit in weekly_habits):
+                habit_status = check_habit_status_weekly_for_habit_tracker(habit_name, habit_data)
+                print(f"Habit Status for '{habit_name}':")
+                print(habit_status.to_string(index=False, justify='center'))
+                return True          
         elif choice == "3":
             is_predefined = habit_database.is_predefined_habit(habit_name)
     
