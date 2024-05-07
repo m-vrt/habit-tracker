@@ -7,12 +7,20 @@ from habit_tracker_predefined import (
     check_habit_status_predefined_weekly,
     get_predefined_weekly_habits
 )
-from habit_tracker import (
+from habit_tracker import (    
     get_habit_data_from_database,
     check_habit_status_daily_for_habit_tracker,
     get_daily_habits_for_habit_tracker,
     check_habit_status_weekly_for_habit_tracker,
     get_weekly_habits_for_habit_tracker
+)
+from analytics import (
+    calculate_longest_streak_for_habit_daily,
+    calculate_longest_streak_for_habit_weekly,
+    calculate_longest_streak_for_habit_predefined_daily,
+    calculate_longest_streak_for_habit_predefined_weekly,
+    get_habit_hall_of_fame_daily,
+    get_habit_hall_of_fame_weekly
 )
 
 
@@ -31,7 +39,7 @@ def main(habit_database):
         elif choice == "2":
             manage_habits_menu(habit_database, predefined_habits)
         elif choice == "3":
-            view_habit_hall_of_fame_menu(habit_database)
+            view_streaks_main(habit_database, predefined_habits)
         elif choice == "4":
             print("~ Quitting the Habit Tracker...\n\n\n")
             habit_database.close()
@@ -50,7 +58,7 @@ def print_menu():
     print("\nWhat would you like to do?\n")
     print("1. Add Habit")
     print("2. Manage Habits")
-    print("3. View Habit Hall of Fame")
+    print("3. View Longest Streaks")
     print("4. Quit")
 
 def add_habit_menu(habit_database):
@@ -280,34 +288,169 @@ def clear_all_habits(habit_database):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def view_habit_hall_of_fame_menu(habit_database):
-    """Menu for viewing the Habit Hall of Fame."""
-    print("\nVIEW HABIT HALL OF FAME")
-    print("1. Daily")
-    print("2. Weekly")
-    print("3. All Habits")
-    print("4. Return to Main Menu")
+def view_streaks_main(habit_database, predefined_habits):
+    """Submenu for viewing streaks."""
+    while True:
+        print("\nVIEW LONGEST STREAKS")
+        print("1. View Longest Streak for Habit")
+        print("2. View Habit Hall of Fame")
+        print("3. Return to Main Menu")
+
+        choice = input("\nPlease enter the number of your choice: ").strip()
+
+        if choice == "1":
+            view_streak_for_habit(habit_database, predefined_habits)
+        elif choice == "2":
+            view_habit_hall_of_fame()
+        elif choice == "3":
+            print("~ Returning to Main Menu...\n\n")
+            return
+        else:
+            print("~ Invalid choice. Please enter a number from 1 to 3.")
+
+def view_streak_for_habit(habit_database, predefined_habits):
+    """Menu for viewing the list of habits."""
+    print("\nVIEW LIST OF HABITS")  
+
+    daily_habits = habit_database.get_habits_by_periodicity("Daily")
+    weekly_habits = habit_database.get_habits_by_periodicity("Weekly")
+
+    predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
+    predefined_weekly_habits = get_predefined_weekly_habits(predefined_habits)
+
+    total_habits = len(daily_habits) + len(weekly_habits) + len(predefined_daily_habits) + len(predefined_weekly_habits)
+    current_index = 1
+
+    print("\nDaily Habits:")
+    if not daily_habits:
+        print("No daily habits added yet.")
+    else:
+        for habit in daily_habits:
+            print(f"{current_index}. {habit['name']} - {habit['description']}")
+            current_index += 1
+
+    print("\nWeekly Habits:")
+    if not weekly_habits:
+        print("No weekly habits added yet.")
+    else:
+        for habit in weekly_habits:
+            print(f"{current_index}. {habit['name']} - {habit['description']}")
+            current_index += 1
+
+    print("\nPredefined Daily Habits:")
+    if not predefined_daily_habits:
+        print("No predefined daily habits added yet.")
+    else:
+        for index, habit in enumerate(predefined_daily_habits, start=current_index):
+            print(f"{index}. {habit['name']} - {habit['description']}")
+            current_index += 1
+
+    print("\nPredefined Weekly Habits:")
+    if not predefined_weekly_habits:
+        print("No predefined weekly habits added yet.")
+    else:
+        for index, habit in enumerate(predefined_weekly_habits, start=current_index):
+            print(f"{index}. {habit['name']} - {habit['description']}")
+            current_index += 1
+
+    if total_habits == 0:
+        print("\n~ No habits to show.")
+        return True
 
     while True:
         choice = input("\nPlease enter the number of your choice: ").strip()
 
-        if choice == "1":
-            view_longest_streak_menu(habit_database, periodicity="Daily")
-            break
-        elif choice == "2":
-            view_longest_streak_menu(habit_database, periodicity="Weekly")
-            break
-        elif choice == "3":
-            view_longest_streak_menu(habit_database, periodicity="All")
-            break
-        elif choice == "4":
-            print("~ Returning to Main Menu...\n\n")
-            return 
+        if choice.isdigit():
+            choice = int(choice)
+            if 1 <= choice <= total_habits:
+                if choice <= len(daily_habits):
+                    selected_habit = daily_habits[choice - 1]
+                    periodicity = "Daily"
+                elif choice <= len(daily_habits) + len(weekly_habits):
+                    selected_habit = weekly_habits[choice - len(daily_habits) - 1]
+                    periodicity = "Weekly"
+                elif choice <= len(daily_habits) + len(weekly_habits) + len(predefined_daily_habits):
+                    selected_habit = predefined_daily_habits[choice - len(daily_habits) - len(weekly_habits) - 1]
+                    periodicity = "Predefined Daily"
+                else:
+                    selected_habit = predefined_weekly_habits[choice - len(daily_habits) - len(weekly_habits) - len(predefined_daily_habits) - 1]
+                    periodicity = "Predefined Weekly"
+                if view_longest_streak_for_habit(habit_database, selected_habit, periodicity, predefined_habits):                    
+                    break
+            else:
+                print(f"~ Invalid choice. Please enter a number from 1 to {total_habits}.")
         else:
-            print("~ Invalid choice. Please enter a number from 1 to 4.")
+            print("~ Invalid choice. Please enter a number.")
 
-def view_longest_streak_menu(habit_database, periodicity):
-    pass
+    return False
+
+def view_longest_streak_for_habit(habit_database, selected_habit, periodicity, predefined_habits):
+    """Menu for managing a selected habit for streaks."""
+    if isinstance(selected_habit, str):       
+        habit_name = selected_habit
+        is_predefined = habit_database.is_predefined_habit(habit_name)
+    else:       
+        habit_name = selected_habit['name']
+        is_predefined = False
+
+    print(f"\n[Habit: {habit_name}]")
+
+    if periodicity == 'Daily':
+        habit_data = get_habit_data_from_database()
+        streak = calculate_longest_streak_for_habit_daily(habit_name, habit_data)
+    elif periodicity == 'Weekly':
+        habit_data = get_habit_data_from_database()
+        streak = calculate_longest_streak_for_habit_weekly(habit_name, habit_data)
+    elif is_predefined and periodicity == 'Daily':
+        streak = calculate_longest_streak_for_habit_predefined_daily(habit_name)
+    elif is_predefined and periodicity == 'Weekly':
+        streak = calculate_longest_streak_for_habit_predefined_weekly(habit_name)
+    else:
+        streak = None
+
+    if streak is not None:
+        print(f"Longest Streak: {streak}")
+    else:
+        print("No streak data available for the selected habit and periodicity.")
+   
+    print("~ Returning to Previous Menu...\n\n")
+    return True
+
+def view_habit_hall_of_fame():
+    """Menu for viewing the habit hall of fame."""
+    print("\nVIEW HABIT HALL OF FAME")
+    
+    while True:
+        print("1. Daily Habit Hall of Fame")
+        print("2. Weekly Habit Hall of Fame")
+        print("3. Return to Previous Menu")
+
+        choice = input("\nPlease enter the number of your choice: ").strip()
+
+        if choice == "1":
+            daily_hall_of_fame = get_habit_hall_of_fame_daily()
+            if not daily_hall_of_fame:
+                print("No daily streak record yet. Keep pushing for those streaks!")
+            else:
+                print("Daily Habit Hall of Fame:")
+                for habit, streak in daily_hall_of_fame.items():
+                    print(f"{habit} - Longest Streak: {streak}")
+        elif choice == "2":
+            weekly_hall_of_fame = get_habit_hall_of_fame_weekly()
+            if not weekly_hall_of_fame:
+                print("No weekly streak record yet. Keep pushing for those streaks!")
+            else:
+                print("Weekly Habit Hall of Fame:")
+                for habit, streak in weekly_hall_of_fame.items():
+                    print(f"{habit} - Longest Streak: {streak}")
+        elif choice == "3":
+            print("~ Returning to Previous Menu...\n\n")
+            return True
+        else:
+            print("~ Invalid choice. Please enter a number between 1 and 3.")
+            return False
+
+
 
 
 if __name__ == "__main__":
