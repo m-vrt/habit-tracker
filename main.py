@@ -418,9 +418,9 @@ def view_longest_streak_for_habit(habit_database, selected_habit, periodicity, p
 
 def view_habit_hall_of_fame():
     """Menu for viewing the habit hall of fame."""
-    print("\nVIEW HABIT HALL OF FAME")
-    
+       
     while True:
+        print("\nVIEW HABIT HALL OF FAME")
         print("1. Daily Habit Hall of Fame")
         print("2. Weekly Habit Hall of Fame")
         print("3. Return to Previous Menu")
@@ -430,7 +430,7 @@ def view_habit_hall_of_fame():
         if choice == "1":
             daily_hall_of_fame = get_habit_hall_of_fame_daily()
             if daily_hall_of_fame == 0:
-                print("No daily streak record yet. Keep pushing for those streaks!")
+                print("~ No daily streak record yet. Keep pushing for those streaks!")
             else:
                 print("Daily Habit Hall of Fame:")
                 habits = get_habits_with_longest_streaks("Daily")
@@ -442,7 +442,7 @@ def view_habit_hall_of_fame():
         elif choice == "2":
             weekly_hall_of_fame = get_habit_hall_of_fame_weekly()
             if weekly_hall_of_fame == 0:
-                print("No weekly streak record yet. Keep pushing for those streaks!")
+                print("~ No weekly streak record yet. Keep pushing for those streaks!")
             else:
                 print("Weekly Habit Hall of Fame:")
                 habits = get_habits_with_longest_streaks("Weekly")
