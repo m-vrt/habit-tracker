@@ -20,7 +20,8 @@ from analytics import (
     calculate_longest_streak_for_habit_predefined_daily,
     calculate_longest_streak_for_habit_predefined_weekly,
     get_habit_hall_of_fame_daily,
-    get_habit_hall_of_fame_weekly
+    get_habit_hall_of_fame_weekly,
+    get_habits_with_longest_streaks
 )
 
 
@@ -402,18 +403,17 @@ def view_longest_streak_for_habit(habit_database, selected_habit, periodicity, p
         habit_data = get_habit_data_from_database()
         streak = calculate_longest_streak_for_habit_weekly(habit_name, habit_data)
     elif is_predefined and periodicity == 'Daily':
-        streak = calculate_longest_streak_for_habit_predefined_daily(habit_name)
+        streak = calculate_longest_streak_for_habit_predefined_daily(habit_name, habit_data)
     elif is_predefined and periodicity == 'Weekly':
-        streak = calculate_longest_streak_for_habit_predefined_weekly(habit_name)
+        streak = calculate_longest_streak_for_habit_predefined_weekly(habit_name, habit_data)
     else:
         streak = None
 
     if streak is not None:
         print(f"Longest Streak: {streak}")
     else:
-        print("No streak data available for the selected habit and periodicity.")
-   
-    print("~ Returning to Previous Menu...\n\n")
+        print("No streak data available for the selected habit.")
+      
     return True
 
 def view_habit_hall_of_fame():
@@ -429,27 +429,34 @@ def view_habit_hall_of_fame():
 
         if choice == "1":
             daily_hall_of_fame = get_habit_hall_of_fame_daily()
-            if not daily_hall_of_fame:
+            if daily_hall_of_fame == 0:
                 print("No daily streak record yet. Keep pushing for those streaks!")
             else:
                 print("Daily Habit Hall of Fame:")
-                for habit, streak in daily_hall_of_fame.items():
-                    print(f"{habit} - Longest Streak: {streak}")
+                habits = get_habits_with_longest_streaks("Daily")
+                if len(habits) == 1:
+                    habit_name, streak = habits[0]
+                    print(f"{habit_name} (Longest Streak: {streak})")
+                else:
+                    print(", ".join([f"{habit[0]} (Longest Streak: {habit[1]})" for habit in habits]))
         elif choice == "2":
             weekly_hall_of_fame = get_habit_hall_of_fame_weekly()
-            if not weekly_hall_of_fame:
+            if weekly_hall_of_fame == 0:
                 print("No weekly streak record yet. Keep pushing for those streaks!")
             else:
                 print("Weekly Habit Hall of Fame:")
-                for habit, streak in weekly_hall_of_fame.items():
-                    print(f"{habit} - Longest Streak: {streak}")
+                habits = get_habits_with_longest_streaks("Weekly")
+                if len(habits) == 1:
+                    habit_name, streak = habits[0]
+                    print(f"{habit_name} (Longest Streak: {streak})")
+                else:
+                    print(", ".join([f"{habit[0]} (Longest Streak: {habit[1]})" for habit in habits]))
         elif choice == "3":
             print("~ Returning to Previous Menu...\n\n")
             return True
         else:
             print("~ Invalid choice. Please enter a number between 1 and 3.")
             return False
-
 
 
 
