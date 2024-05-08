@@ -1,0 +1,71 @@
+id,name,description,periodicity,created_date,completion_date,completion_time
+1,Study,Study current module,Daily,3/1/2024 17:06,3/1/2024,23:29:27
+2,Study,Study current module,Daily,3/1/2024 17:06,3/2/2024,20:42:14
+3,Study,Study current module,Daily,3/1/2024 17:06,3/3/2024,23:22:10
+4,Study,Study current module,Daily,3/1/2024 17:06,3/4/2024,21:19:07
+5,Study,Study current module,Daily,3/1/2024 17:06,3/5/2024,21:36:08
+6,Study,Study current module,Daily,3/1/2024 17:06,3/6/2024,23:04:19
+7,Study,Study current module,Daily,3/1/2024 17:06,3/7/2024,18:11:22
+8,Study,Study current module,Daily,3/1/2024 17:06,3/8/2024,18:19:06
+9,Study,Study current module,Daily,3/1/2024 17:06,3/9/2024,21:36:18
+10,Study,Study current module,Daily,3/1/2024 17:06,3/10/2024,23:09:34
+11,Study,Study current module,Daily,3/1/2024 17:06,3/11/2024,22:58:46
+12,Study,Study current module,Daily,3/1/2024 17:06,3/12/2024,18:13:04
+13,Study,Study current module,Daily,3/1/2024 17:06,3/13/2024,22:57:48
+14,Study,Study current module,Daily,3/1/2024 17:06,3/14/2024,22:22:21
+15,Study,Study current module,Daily,3/1/2024 17:06,3/15/2024,21:17:18
+16,Study,Study current module,Daily,3/1/2024 17:06,3/16/2024,22:48:41
+17,Study,Study current module,Daily,3/1/2024 17:06,3/17/2024,19:30:14
+18,Study,Study current module,Daily,3/1/2024 17:06,3/18/2024,23:37:11
+19,Study,Study current module,Daily,3/1/2024 17:06,3/19/2024,17:42:44
+20,Study,Study current module,Daily,3/1/2024 17:06,3/20/2024,23:01:01
+21,Study,Study current module,Daily,3/1/2024 17:06,3/21/2024,20:26:58
+22,Study,Study current module,Daily,3/1/2024 17:06,3/22/2024,18:48:23
+23,Study,Study current module,Daily,3/1/2024 17:06,3/23/2024,17:40:35
+24,Study,Study current module,Daily,3/1/2024 17:06,3/24/2024,17:52:19
+25,Study,Study current module,Daily,3/1/2024 17:06,3/25/2024,21:24:15
+26,Study,Study current module,Daily,3/1/2024 17:06,3/26/2024,22:18:29
+27,Study,Study current module,Daily,3/1/2024 17:06,3/27/2024,18:42:58
+28,Study,Study current module,Daily,3/1/2024 17:06,3/28/2024,20:49:58
+29,Study,Study current module,Daily,3/1/2024 17:06,3/29/2024,23:03:59
+30,Study,Study current module,Daily,3/1/2024 17:06,3/30/2024,20:36:40
+31,Study,Study current module,Daily,3/1/2024 17:06,3/31/2024,19:38:33
+32,Code,Practice coding,Daily,3/5/2024 17:37,3/6/2024,18:23:58
+33,Code,Practice coding,Daily,3/5/2024 17:37,3/8/2024,23:45:55
+34,Code,Practice coding,Daily,3/5/2024 17:37,3/10/2024,23:54:24
+35,Code,Practice coding,Daily,3/5/2024 17:37,3/11/2024,19:10:49
+36,Code,Practice coding,Daily,3/5/2024 17:37,3/14/2024,20:38:30
+37,Code,Practice coding,Daily,3/5/2024 17:37,3/15/2024,20:39:34
+38,Code,Practice coding,Daily,3/5/2024 17:37,3/16/2024,20:09:50
+39,Code,Practice coding,Daily,3/5/2024 17:37,3/17/2024,20:02:30
+40,Code,Practice coding,Daily,3/5/2024 17:37,3/18/2024,19:18:46
+41,Code,Practice coding,Daily,3/5/2024 17:37,3/20/2024,19:10:33
+42,Code,Practice coding,Daily,3/5/2024 17:37,3/21/2024,21:21:25
+43,Code,Practice coding,Daily,3/5/2024 17:37,3/22/2024,18:15:29
+44,Code,Practice coding,Daily,3/5/2024 17:37,3/24/2024,19:16:59
+45,Code,Practice coding,Daily,3/5/2024 17:37,3/25/2024,22:10:45
+46,Code,Practice coding,Daily,3/5/2024 17:37,3/26/2024,21:16:17
+47,Code,Practice coding,Daily,3/5/2024 17:37,3/27/2024,19:26:26
+48,Code,Practice coding,Daily,3/5/2024 17:37,3/28/2024,23:28:29
+49,Code,Practice coding,Daily,3/5/2024 17:37,3/29/2024,18:16:09
+50,Research,Do some research,Daily,3/3/2024 17:37,3/4/2024,20:37:55
+51,Research,Do some research,Daily,3/3/2024 17:37,3/8/2024,21:34:43
+52,Research,Do some research,Daily,3/3/2024 17:37,3/9/2024,20:04:03
+53,Research,Do some research,Daily,3/3/2024 17:37,3/10/2024,20:54:25
+54,Research,Do some research,Daily,3/3/2024 17:37,3/12/2024,21:17:42
+55,Research,Do some research,Daily,3/3/2024 17:37,3/13/2024,18:27:14
+56,Research,Do some research,Daily,3/3/2024 17:37,3/14/2024,19:52:30
+57,Research,Do some research,Daily,3/3/2024 17:37,3/18/2024,19:25:57
+58,Research,Do some research,Daily,3/3/2024 17:37,3/19/2024,22:09:03
+59,Research,Do some research,Daily,3/3/2024 17:37,3/20/2024,20:48:28
+60,Research,Do some research,Daily,3/3/2024 17:37,3/21/2024,21:26:37
+61,Research,Do some research,Daily,3/3/2024 17:37,3/22/2024,23:28:29
+62,Research,Do some research,Daily,3/3/2024 17:37,3/29/2024,22:06:05
+63,Research,Do some research,Daily,3/3/2024 17:37,3/30/2024,19:24:46
+64,Clean House,Do household chores,Weekly,3/1/2024 19:45,3/1/2024,21:55:33
+65,Clean House,Do household chores,Weekly,3/1/2024 19:45,3/6/2024,21:40:37
+66,Clean House,Do household chores,Weekly,3/1/2024 19:45,3/19/2024,21:26:50
+67,Call Family,Check in with family members,Weekly,3/4/2024 16:15,3/9/2024,23:40:06
+68,Call Family,Check in with family members,Weekly,3/4/2024 16:15,3/16/2024,20:38:30
+69,Call Family,Check in with family members,Weekly,3/4/2024 16:15,3/23/2024,19:24:45
+70,Call Family,Check in with family members,Weekly,3/4/2024 16:15,3/30/2024,18:38:52
