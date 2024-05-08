@@ -86,7 +86,7 @@ pytest
 
 ## Populating Predefined Data
 
-The `predefined_data` table contains initial data populated from the `predefined_data.csv` file. To achieve this, the following steps were taken:
+The `predefined_data` table contains predefined habits populated from the `predefined_data.csv` file. To achieve this, the following steps were taken:
 
 1. **Initial Population:** The data from the `predefined_data.csv` file was imported into the `predefined_data` table using SQLite3.
 
