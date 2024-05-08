@@ -42,7 +42,7 @@ def main(habit_database):
         elif choice == "3":
             view_streaks_main(habit_database, predefined_habits)
         elif choice == "4":
-            print("~ Quitting the Habit Tracker...\n\n\n")
+            print("~ Thank you for using the Habit Tracker (by MV)!\n\n\n")
             habit_database.close()
             break
         else:
@@ -311,7 +311,7 @@ def view_streaks_main(habit_database, predefined_habits):
 
 def view_streak_for_habit(habit_database, predefined_habits):
     """Menu for viewing the list of habits."""
-    print("\nVIEW LIST OF HABITS")  
+    print("\nSELECT A HABIT TO VIEW LONGEST STREAK")  
 
     daily_habits = habit_database.get_habits_by_periodicity("Daily")
     weekly_habits = habit_database.get_habits_by_periodicity("Weekly")
@@ -376,7 +376,7 @@ def view_streak_for_habit(habit_database, predefined_habits):
                 else:
                     selected_habit = predefined_weekly_habits[choice - len(daily_habits) - len(weekly_habits) - len(predefined_daily_habits) - 1]
                     periodicity = "Predefined Weekly"
-                if view_longest_streak_for_habit(habit_database, selected_habit, periodicity, predefined_habits):                    
+                if view_longest_streak_for_habit(habit_database, selected_habit, periodicity, predefined_habits):                  
                     break
             else:
                 print(f"~ Invalid choice. Please enter a number from 1 to {total_habits}.")
@@ -387,6 +387,11 @@ def view_streak_for_habit(habit_database, predefined_habits):
 
 def view_longest_streak_for_habit(habit_database, selected_habit, periodicity, predefined_habits):
     """Menu for managing a selected habit for streaks."""
+    predefined_daily_habits = get_predefined_daily_habits(predefined_habits)
+    predefined_weekly_habits = get_predefined_weekly_habits(predefined_habits)
+    daily_habits = get_daily_habits_for_habit_tracker()
+    weekly_habits = get_weekly_habits_for_habit_tracker()
+
     if isinstance(selected_habit, str):       
         habit_name = selected_habit
         is_predefined = habit_database.is_predefined_habit(habit_name)
@@ -395,17 +400,17 @@ def view_longest_streak_for_habit(habit_database, selected_habit, periodicity, p
         is_predefined = False
 
     print(f"\n[Habit: {habit_name}]")
-
-    if periodicity == 'Daily':
-        habit_data = get_habit_data_from_database()
-        streak = calculate_longest_streak_for_habit_daily(habit_name, habit_data)
-    elif periodicity == 'Weekly':
-        habit_data = get_habit_data_from_database()
-        streak = calculate_longest_streak_for_habit_weekly(habit_name, habit_data)
-    elif is_predefined and periodicity == 'Daily':
-        streak = calculate_longest_streak_for_habit_predefined_daily(habit_name, habit_data)
-    elif is_predefined and periodicity == 'Weekly':
-        streak = calculate_longest_streak_for_habit_predefined_weekly(habit_name, habit_data)
+  
+    if any(habit['name'] == habit_name for habit in predefined_daily_habits):        
+        streak = calculate_longest_streak_for_habit_predefined_daily(habit_name)  
+    elif any(habit['name'] == habit_name for habit in predefined_weekly_habits):
+        streak = calculate_longest_streak_for_habit_predefined_weekly(habit_name)     
+    elif any(habit['name'] == habit_name for habit in daily_habits):   
+        habit_data = get_habit_data_from_database()         
+        streak = calculate_longest_streak_for_habit_daily(habit_name, habit_data)     
+    elif any(habit['name'] == habit_name for habit in weekly_habits):       
+        habit_data = get_habit_data_from_database()       
+        streak = calculate_longest_streak_for_habit_weekly(habit_name, habit_data)        
     else:
         streak = None
 

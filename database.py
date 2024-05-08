@@ -225,6 +225,14 @@ class HabitDatabase:
             return result[0]
         return ""
     
+    def get_predefined_habit_names(self):
+        """Get the names of predefined habits from the database."""
+        cursor = self.connection.cursor()
+        query = "SELECT name FROM predefined_data"
+        cursor.execute(query)
+        habit_names = [row[0] for row in cursor.fetchall()]
+        return habit_names
+    
     def close(self):
         """Close the database connection."""
         self.connection.close()

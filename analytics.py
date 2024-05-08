@@ -1,6 +1,8 @@
 import pandas as pd
 from habit_tracker import get_habit_data_from_database
-from habit_tracker_predefined import habit_data as predefined_habit_data
+from habit_tracker_predefined import check_habit_status_predefined_daily, check_habit_status_predefined_weekly
+
+
 
 
 def calculate_longest_streak_for_habit_daily(habit_name, habit_data):   
@@ -66,48 +68,37 @@ def calculate_longest_streak_for_habit_weekly(habit_name, habit_data):
             break
     
     return longest_streak
-   
-def calculate_longest_streak_for_habit_predefined_daily(habit_name):    
-    habit_df = pd.DataFrame(predefined_habit_data)
- 
-    habit_df = habit_df[(habit_df['name'] == habit_name) & (habit_df['periodicity'] == 'Daily')]
-  
-    habit_df['completion_date'] = pd.to_datetime(habit_df['completion_date'])
 
-    current_streak = 0
+def calculate_longest_streak_for_habit_predefined_daily(habit_name):
+    habit_status = check_habit_status_predefined_daily(habit_name)
     longest_streak = 0
-
-    for date in pd.date_range(start=habit_df['completion_date'].min(), end=habit_df['completion_date'].max()):
-        if date in habit_df['completion_date'].values:
+    current_streak = 0
+    
+    for completion in habit_status['Completion']:
+        if completion == 'Completed':
             current_streak += 1
-            longest_streak = max(longest_streak, current_streak)
         else:
+            longest_streak = max(longest_streak, current_streak)
             current_streak = 0
 
+    longest_streak = max(longest_streak, current_streak)
+    
     return longest_streak
 
-def calculate_longest_streak_for_habit_predefined_weekly(habit_name):   
-    habit_df = pd.DataFrame(predefined_habit_data)
- 
-    habit_df = habit_df[(habit_df['name'] == habit_name) & (habit_df['periodicity'] == 'Weekly')]
-  
-    habit_df['completion_date'] = pd.to_datetime(habit_df['completion_date']).dt.date
-
-    current_streak = 0
+def calculate_longest_streak_for_habit_predefined_weekly(habit_name):
+    habit_status = check_habit_status_predefined_weekly(habit_name)
     longest_streak = 0
-
-    created_date = pd.to_datetime(habit_df['created_date'].iloc[0]).date()
-    current_month_end = pd.Timestamp.now().replace(day=1) + pd.offsets.MonthEnd(0)
-
-    for week_start in pd.date_range(start=created_date, end=current_month_end, freq='W-MON'):
-        week_end = week_start + pd.DateOffset(days=7)
-
-        if week_start in habit_df['completion_date'].values or week_end in habit_df['completion_date'].values:
+    current_streak = 0
+    
+    for completion in habit_status['Completion']:
+        if completion != '':
             current_streak += 1
-            longest_streak = max(longest_streak, current_streak)
         else:
+            longest_streak = max(longest_streak, current_streak)
             current_streak = 0
 
+    longest_streak = max(longest_streak, current_streak)
+    
     return longest_streak
 
 def get_habit_hall_of_fame_daily():
@@ -157,3 +148,6 @@ def get_habits_with_longest_streaks(periodicity):
 
     longest_streak = max([habit[1] for habit in unique_habits])
     return [(habit[0], habit[1]) for habit in unique_habits if habit[1] == longest_streak]
+
+
+
